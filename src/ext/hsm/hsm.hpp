@@ -542,7 +542,7 @@ public:
 	}
 
 	Vector3<T> operator + (const Vector3<T>& v) const {
-		return Point3<T>(x + v.x, y + v.y, z + v.z);
+		return Vector3<T>(x + v.x, y + v.y, z + v.z);
 	}
 
 	Vector3<T>& operator += (const Vector3<T>& v) {
@@ -553,7 +553,7 @@ public:
 	}
 
 	Vector3<T> operator - (const Vector3<T>& v) const {
-		return Point3<T>(x - v.x, y - v.y, z - v.z);
+		return Vector3<T>(x - v.x, y - v.y, z - v.z);
 	}
 
 	Vector3<T>& operator -= (const Vector3<T>& v) {
@@ -882,6 +882,13 @@ public:
 		return Matrix4x4(inv);
 	}
 
+	bool SwapsHandedness() const {
+		Float det = data[0][0] * (data[1][1] * data[2][2] - data[1][2] * data[2][1]) -
+					data[0][1] * (data[1][0] * data[2][2] - data[1][2] * data[2][0]) +
+					data[0][2] * (data[1][0] * data[2][1] - data[1][1] * data[2][0]);
+		return det < 0;
+	}
+
 	bool IsIdentity() const {
 		return (data[0][0] == 1.f && data[0][1] == 0.f && data[0][2] == 0.f && data[0][3] == 0.f && 
 				data[1][0] == 0.f && data[1][1] == 1.f && data[1][2] == 0.f && data[1][3] == 0.f && 
@@ -1108,7 +1115,8 @@ Quaternion Slerp(Float n, const Quaternion& q1, const Quaternion& q2) {
 class Ray {
 public:
 	//public methods
-	Ray(const Point3f& o, const Vector3f& d) :origin(o), direction(d) {}
+	Ray() : tMax(Infinity), time(0.f) {}
+	Ray(const Point3f& o, const Vector3f& d, Float tMax = Infinity, Float t = 0.0f) : origin(o), direction(d), time(t), tMax(tMax) {}
 
 	Point3f At(Float t) const { return origin + t * direction; }
 
@@ -1119,10 +1127,11 @@ public:
 	//public data
 	Point3f origin;
 	Vector3f direction;
+	Float time, tMax;
 };
 
 inline std::ostream &operator<<(std::ostream &o, const Ray &r) {
-	o << "[ origin:" << r.origin << ", direction:" << r.direction << "]";
+	o << "[ origin:" << r.origin << ", direction:" << r.direction << ", time:" << r.time << "]";
 	return o;
 }
 
