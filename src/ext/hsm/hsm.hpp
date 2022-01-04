@@ -3,8 +3,7 @@
 #pragma once
 #endif
 
-#ifndef HSM_H
-#define HSM_H
+#pragma once
 
 #include <assert.h>
 #include <iterator>
@@ -1136,4 +1135,3 @@ inline std::ostream &operator<<(std::ostream &o, const Ray &r) {
 }
 
 }
-#endif
