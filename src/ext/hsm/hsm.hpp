@@ -47,9 +47,9 @@ inline bool isNaN(const T t) { return std::isnan(t); }
 template<>
 inline bool isNaN(const int t) { return false; }
 
-inline Float Radians(Float degree) { return (Pi / 180) * degree; }
+inline Float Radians(Float degree) { return (Pi / 180.0f) * degree; }
 
-inline Float Degrees(Float radian) { return (180 / Pi) * radian; }
+inline Float Degrees(Float radian) { return (180.0f / Pi) * radian; }
 
 template<typename T> class Vector2;
 template<typename T> class Bounds2;
