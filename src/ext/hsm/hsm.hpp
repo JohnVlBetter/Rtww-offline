@@ -9,6 +9,7 @@
 #include <iterator>
 #include <iostream>
 #include <algorithm>
+#include <random>
 
 //#define USE_DOUBLE
 #ifdef USE_DOUBLE
@@ -31,6 +32,18 @@ static constexpr Float Infinity = std::numeric_limits<Float>::infinity();
 static constexpr Float Sqrt2    = 1.41421356237309504880;
 static constexpr Float Pi       = 3.14159265358979323846;
 static constexpr Float InvPi    = 0.31830988618379067154;
+
+template<typename T>
+inline T Random() {
+	static std::uniform_real_distribution<T> distribution(0.0, 1.0);
+	static std::mt19937 generator;
+	return distribution(generator);
+}
+
+template<typename T>
+inline T Random(T min, T max) {
+	return min + (max - min) * Random<T>();
+}
 
 template <typename T, typename S, typename R>
 inline T Clamp(T val, S low, R high) {
@@ -632,6 +645,14 @@ typedef Point2<Float> Point2f;
 typedef Point2<int> Point2i;
 typedef Point3<Float> Point3f;
 typedef Point3<int> Point3i;
+
+Vector3f RandomInUnitSphere() {
+	while (true) {
+		Vector3f v(Random<Float>(-1.0f, 1.0f), Random<Float>(-1.0f, 1.0f), Random<Float>(-1.0f, 1.0f));
+		if (v.LengthSquared() >= 1.0f) continue;
+		return v;
+	}
+}
 
 //Bounds2
 template <typename T>
