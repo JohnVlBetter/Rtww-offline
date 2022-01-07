@@ -14,9 +14,9 @@ std::ostream& operator << (std::ostream &o, const Color c) {
 	auto b = c.z;
 
 	auto scale = 1.0f / samplesPerPixel;
-	r *= scale;
-	g *= scale;
-	b *= scale;
+	r = sqrt(r * scale);
+	g = sqrt(g * scale);
+	b = sqrt(b * scale);
 
 	o << static_cast<int>(256.0f * Clamp<Float>(r,0.0f,0.999f)) << ' '
 	  << static_cast<int>(256.0f * Clamp<Float>(g,0.0f,0.999f)) << ' '

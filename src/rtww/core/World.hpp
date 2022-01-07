@@ -18,13 +18,14 @@ public:
 
 bool ShapesSet::Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const {
 	IntersectionRecord tRec;
+	auto hitAnything = false;
 	auto closest = tMax;
 	for (const auto& object : objects) {
 		if (object->Intersection(r, tMin, closest, tRec)) {
 			closest = tRec.time;
 			rec = tRec;
-			return true;
+			hitAnything = true;
 		}
 	}
-	return false;
+	return hitAnything;
 }

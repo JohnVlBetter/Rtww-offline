@@ -654,6 +654,16 @@ Vector3f RandomInUnitSphere() {
 	}
 }
 
+Vector3f RandomInHemisphere(const Vector3f& normal) {
+	Vector3f v = RandomInUnitSphere();
+	if (Dot(v, normal) > 0.0f) return v;
+	return -v;
+}
+
+Vector3f RandomUnitVec() {
+	return RandomInUnitSphere().Normalize();
+}
+
 //Bounds2
 template <typename T>
 class Bounds2 {

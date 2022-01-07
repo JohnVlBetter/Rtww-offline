@@ -3,7 +3,7 @@
 #include "../core/World.hpp"
 #include "../core/Camera.hpp"
 
-const uint16_t imageWidth = 500;
+const uint16_t imageWidth = 400;
 const double aspectRatio = 16.0f / 9.0f;
 const int depth = 50;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
@@ -14,8 +14,8 @@ Color RayColor(const Ray& r, const ShapesSet& world, int depth){
 	if (depth <= 0)
 		return Color(0, 0, 0);
 
-	if (world.Intersection(r, 0, Infinity, rec)){
-		Point3f target = rec.hitPoint + rec.normal + RandomInUnitSphere();
+	if (world.Intersection(r, 0.001f, Infinity, rec)){
+		Point3f target = rec.hitPoint + RandomInHemisphere(rec.normal);
 		return 0.5 * RayColor(Ray(rec.hitPoint, target - rec.hitPoint), world, depth-1);
 	}
 	Vector3f normalizedDirection = r.direction.Normalize();
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
 
 	ShapesSet world;
 	world.Add(std::make_shared<Sphere>(Point3f(0, 0, -1), 0.5f));
-	world.Add(std::make_shared<Sphere>(Point3f(0, -100, -1), 100));
+	world.Add(std::make_shared<Sphere>(Point3f(0, -100.5f, -1), 100));
 	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {
