@@ -59,6 +59,10 @@ template<typename T>
 inline bool isNaN(const T t) { return std::isnan(t); }
 template<>
 inline bool isNaN(const int t) { return false; }
+template<typename T>
+inline bool isNearZero(const T t) { return fabs(t) < 1e-8; }
+template<>
+inline bool isNearZero(const int t) { return false; }
 
 inline Float Radians(Float degree) { return (Pi / 180.0f) * degree; }
 
@@ -605,11 +609,13 @@ public:
 		return *this;
 	}
 
+	inline bool IsNearZero() const { return isNearZero<T>(x) && isNearZero<T>(y) && isNearZero<T>(z); }
 	inline Float LengthSquared()const { return x * x + y * y + z * z; }
 	inline Float Length()const { return std::sqrt(LengthSquared()); }
 
 	inline Vector3<T> Abs() const { return Vector3<T>(std::abs(x), std::abs(y), std::abs(z)); }
 	inline Vector3<T> Normalize() const { return *this / Length(); }
+	inline Vector3<T> Reflect(const Vector3<T>& normal) { return *this - 2 * Dot(*this, normal)*normal; }
 
 	//public data
 	T x, y, z;

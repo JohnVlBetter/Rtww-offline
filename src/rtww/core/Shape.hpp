@@ -2,9 +2,12 @@
 
 #include "Core.hpp"
 
+class Material;
+
 struct IntersectionRecord {
 	Point3f hitPoint;
 	Vector3f normal;
+	std::shared_ptr<Material> matPtr;
 	Float time;
 	bool isFrontFace;
 

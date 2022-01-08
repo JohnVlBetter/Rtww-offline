@@ -2,6 +2,7 @@
 #include "../shape/Sphere.hpp"
 #include "../core/World.hpp"
 #include "../core/Camera.hpp"
+#include "../core/Material.hpp"
 
 const uint16_t imageWidth = 400;
 const double aspectRatio = 16.0f / 9.0f;
@@ -15,8 +16,11 @@ Color RayColor(const Ray& r, const ShapesSet& world, int depth){
 		return Color(0, 0, 0);
 
 	if (world.Intersection(r, 0.001f, Infinity, rec)){
-		Point3f target = rec.hitPoint + RandomInHemisphere(rec.normal);
-		return 0.5 * RayColor(Ray(rec.hitPoint, target - rec.hitPoint), world, depth-1);
+		Ray scattered;
+		Color attenuation;
+		if (rec.matPtr->Scatter(r, rec, attenuation, scattered))
+			return attenuation * RayColor(scattered, world, depth - 1);
+		return Color(0, 0, 0);
 	}
 	Vector3f normalizedDirection = r.direction.Normalize();
 	auto t = 0.5f*(normalizedDirection.y + 1.0f);
@@ -27,8 +31,15 @@ int main(int argc, char** argv) {
 	Camera camera;
 
 	ShapesSet world;
-	world.Add(std::make_shared<Sphere>(Point3f(0, 0, -1), 0.5f));
-	world.Add(std::make_shared<Sphere>(Point3f(0, -100.5f, -1), 100));
+	auto materialGround = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
+	auto materialCenter = std::make_shared<Lambertian>(Color(0.7, 0.3, 0.3));
+	auto materialLeft = std::make_shared<Metal>(Color(0.8, 0.8, 0.8));
+	auto materialRight = std::make_shared<Metal>(Color(0.8, 0.6, 0.2));
+
+	world.Add(std::make_shared<Sphere>(Point3f(0.0, -100.5, -1.0), 100.0, materialGround));
+	world.Add( std::make_shared<Sphere>(Point3f(0.0, 0.0, -1.0), 0.5, materialCenter));
+	world.Add( std::make_shared<Sphere>(Point3f(-1.0, 0.0, -1.0), 0.5, materialLeft));
+	world.Add( std::make_shared<Sphere>(Point3f(1.0, 0.0, -1.0), 0.5, materialRight));
 	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {

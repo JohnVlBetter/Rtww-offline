@@ -5,13 +5,14 @@
 class Sphere :public Shape {
 public:
 	Sphere() {}
-	Sphere(Point3f c, Float r) :center(c), radius(r) {}
+	Sphere(Point3f c, Float r, std::shared_ptr<Material> mat) :center(c), radius(r), material(mat) {}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
 
 public:
 	Point3f center;
 	Float radius;
+	std::shared_ptr<Material> material;
 };
 
 bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
@@ -34,6 +35,7 @@ bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRec
 	rec.hitPoint = r.At(root);
 	rec.normal = (rec.hitPoint - center) / radius;
 	rec.SetFaceNormal(r, rec.normal);
+	rec.matPtr = material;
 
 	return true;
 }
