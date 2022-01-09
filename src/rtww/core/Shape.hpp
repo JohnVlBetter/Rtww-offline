@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
+#include "AABB.hpp"
 
 class Material;
 
@@ -20,4 +21,5 @@ struct IntersectionRecord {
 class Shape {
 public:
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec)const = 0;
+	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const = 0;
 };

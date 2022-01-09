@@ -3,10 +3,11 @@
 #include "../core/World.hpp"
 #include "../core/Camera.hpp"
 #include "../core/Material.hpp"
+#include "../core/BVH.hpp"
 
-const uint16_t imageWidth = 400;
-const double aspectRatio = 16.0f / 9.0f;
-const int depth = 50;
+const uint16_t imageWidth = 1024;
+const double aspectRatio = 3.0f / 2.0f;
+const int depth = 60;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
 Color RayColor(const Ray& r, const ShapesSet& world, int depth){
@@ -27,19 +28,63 @@ Color RayColor(const Ray& r, const ShapesSet& world, int depth){
 	return (1.0f - t)*Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
 }
 
-int main(int argc, char** argv) {	
-	Camera camera;
-
+ShapesSet RandomScene() {
 	ShapesSet world;
-	auto materialGround = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
-	auto materialCenter = std::make_shared<Lambertian>(Color(0.7, 0.3, 0.3));
-	auto materialLeft = std::make_shared<Metal>(Color(0.8, 0.8, 0.8));
-	auto materialRight = std::make_shared<Metal>(Color(0.8, 0.6, 0.2));
 
-	world.Add(std::make_shared<Sphere>(Point3f(0.0, -100.5, -1.0), 100.0, materialGround));
-	world.Add( std::make_shared<Sphere>(Point3f(0.0, 0.0, -1.0), 0.5, materialCenter));
-	world.Add( std::make_shared<Sphere>(Point3f(-1.0, 0.0, -1.0), 0.5, materialLeft));
-	world.Add( std::make_shared<Sphere>(Point3f(1.0, 0.0, -1.0), 0.5, materialRight));
+	auto groundMaterial = std::make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
+	world.Add(std::make_shared<Sphere>(Point3f(0, -1000, 0), 1000, groundMaterial));
+
+	for (int a = -11; a < 11; a++) {
+		for (int b = -11; b < 11; b++) {
+			auto choose_mat = Random<Float>();
+			Point3f center(a + 0.9*Random<Float>(), 0.2, b + 0.9*Random<Float>());
+
+			if ((center - Point3f(4, 0.2, 0)).Length() > 0.9) {
+				std::shared_ptr<Material> SphereMaterial;
+
+				if (choose_mat < 0.8) {
+					// diffuse
+					auto albedo = RandomVec();// *Color::Random<Float>();
+					SphereMaterial = std::make_shared<Lambertian>(albedo);
+					world.Add(std::make_shared<Sphere>(center, 0.2, SphereMaterial));
+				}
+				else if (choose_mat < 0.95) {
+					// Metal
+					auto albedo = RandomVec(0.5, 1);
+					auto fuzz = Random<Float>(0, 0.5);
+					SphereMaterial = std::make_shared<Metal>(albedo, fuzz);
+					world.Add(std::make_shared<Sphere>(center, 0.2, SphereMaterial));
+				}
+				else {
+					// glass
+					SphereMaterial = std::make_shared<Dielectric>(1.5);
+					world.Add(std::make_shared<Sphere>(center, 0.2, SphereMaterial));
+				}
+			}
+		}
+	}
+
+	auto material1 = std::make_shared<Dielectric>(1.5);
+	world.Add(std::make_shared<Sphere>(Point3f(0, 1, 0), 1.0, material1));
+
+	auto material2 = std::make_shared<Lambertian>(Color(0.4, 0.2, 0.1));
+	world.Add(std::make_shared<Sphere>(Point3f(-4, 1, 0), 1.0, material2));
+
+	auto material3 = std::make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
+	world.Add(std::make_shared<Sphere>(Point3f(4, 1, 0), 1.0, material3));
+
+	return ShapesSet(std::make_shared<BVHNode>(world, 0.0, 1.0));
+}
+
+int main(int argc, char** argv) {
+	Point3f lookfrom(13, 2, 3);
+	Point3f lookat(0, 0, 0);
+	Vector3f vup(0, 1, 0);
+	auto dist2Focus = 10.0f;
+	auto aperture = 0.1;
+	Camera camera(lookfrom, lookat, vup, 20, aspectRatio, aperture, dist2Focus);
+
+	ShapesSet world = RandomScene();
 	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {

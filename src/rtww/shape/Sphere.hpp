@@ -8,12 +8,18 @@ public:
 	Sphere(Point3f c, Float r, std::shared_ptr<Material> mat) :center(c), radius(r), material(mat) {}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
+	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const override;
 
 public:
 	Point3f center;
 	Float radius;
 	std::shared_ptr<Material> material;
 };
+
+bool Sphere::BoundingBox(Float time0, Float time1, AABB& outputBox) const {
+	outputBox = AABB(center - Vector3f(radius, radius, radius), center + Vector3f(radius, radius, radius));
+	return true;
+}
 
 bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
 	Vector3f o2c = r.origin - center;

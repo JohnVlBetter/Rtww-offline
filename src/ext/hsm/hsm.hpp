@@ -40,9 +40,17 @@ inline T Random() {
 	return distribution(generator);
 }
 
+inline int RandomInt() {
+	return static_cast<int>(Random<Float>());
+}
+
 template<typename T>
 inline T Random(T min, T max) {
 	return min + (max - min) * Random<T>();
+}
+
+inline int RandomInt(int min, int max) {
+	return static_cast<int>(Random<Float>(min, max));
 }
 
 template <typename T, typename S, typename R>
@@ -617,6 +625,15 @@ public:
 	inline Vector3<T> Normalize() const { return *this / Length(); }
 	inline Vector3<T> Reflect(const Vector3<T>& normal) { return *this - 2 * Dot(*this, normal)*normal; }
 
+	Vector3<T> Refract(const Vector3<T>& normal, Float etaiOverEtat) {
+		Float cosTheta = fmin(Dot(-*this, normal), 1.0f);
+		//R perpendicular
+		Vector3<T> rOutPerp = etaiOverEtat * (*this + cosTheta * normal);
+		//R parallel
+		Vector3<T> rOutParallel = -sqrt(fabs(1.0f - rOutPerp.LengthSquared())) * normal;
+		return rOutPerp + rOutParallel;
+	}
+
 	//public data
 	T x, y, z;
 };
@@ -660,6 +677,14 @@ Vector3f RandomInUnitSphere() {
 	}
 }
 
+Vector2f RandomInUnitDisk() {
+	while (true) {
+		Vector2f v(Random<Float>(-1.0f, 1.0f), Random<Float>(-1.0f, 1.0f));
+		if (v.LengthSquared() >= 1.0f) continue;
+		return v;
+	}
+}
+
 Vector3f RandomInHemisphere(const Vector3f& normal) {
 	Vector3f v = RandomInUnitSphere();
 	if (Dot(v, normal) > 0.0f) return v;
@@ -668,6 +693,14 @@ Vector3f RandomInHemisphere(const Vector3f& normal) {
 
 Vector3f RandomUnitVec() {
 	return RandomInUnitSphere().Normalize();
+}
+
+Vector3f RandomVec(Float min, Float max) {
+	return Vector3f(Random<double>(min, max), Random<double>(min, max), Random<double>(min, max));
+}
+
+Vector3f RandomVec() {
+	return Vector3f(Random<double>(), Random<double>(), Random<double>());
 }
 
 //Bounds2
