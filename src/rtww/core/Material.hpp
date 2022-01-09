@@ -1,5 +1,6 @@
 #pragma
 #include "Core.hpp"
+#include "Texture.hpp"
 
 struct IntersectionRecord;
 
@@ -10,7 +11,8 @@ public:
 
 class Lambertian :public Material {
 public:
-	Lambertian(const Color& c) :albedo(c) {}
+	Lambertian(const Color& c) :albedo(std::make_shared<SolidColorTexture>(c)) {}
+	Lambertian(std::shared_ptr<Texture> a) :albedo(a) {}
 
 	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const override {
 		auto scatterDir = rec.normal + RandomUnitVec();
@@ -19,12 +21,12 @@ public:
 			scatterDir = rec.normal;
 
 		scattered = Ray(rec.hitPoint, scatterDir);
-		attenuation = albedo;
+		attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
 		return true;
 	}
 
 public:
-	Color albedo;
+	std::shared_ptr<Texture> albedo;
 };
 
 class Metal : public Material {

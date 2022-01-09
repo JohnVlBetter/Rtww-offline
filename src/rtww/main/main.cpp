@@ -4,10 +4,11 @@
 #include "../core/Camera.hpp"
 #include "../core/Material.hpp"
 #include "../core/BVH.hpp"
+#include "../core/Texture.hpp"
 
-const uint16_t imageWidth = 1024;
+const uint16_t imageWidth = 200;
 const double aspectRatio = 3.0f / 2.0f;
-const int depth = 60;
+const int depth = 40;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
 Color RayColor(const Ray& r, const ShapesSet& world, int depth){
@@ -28,16 +29,24 @@ Color RayColor(const Ray& r, const ShapesSet& world, int depth){
 	return (1.0f - t)*Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
 }
 
+ShapesSet Earth() {
+	auto earthTexture = std::make_shared<ImageTexture>("../../../resources/earthmap.jpg");
+	auto earthSurface = std::make_shared<Lambertian>(earthTexture);
+	auto globe = std::make_shared<Sphere>(Point3f(0, 0, 0), 2, earthSurface);
+
+	return ShapesSet(globe);
+}
+
 ShapesSet RandomScene() {
 	ShapesSet world;
 
-	auto groundMaterial = std::make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
-	world.Add(std::make_shared<Sphere>(Point3f(0, -1000, 0), 1000, groundMaterial));
+	auto checker = std::make_shared<CheckerTexture>(Color(0.2, 0.3, 0.1), Color(0.9, 0.9, 0.9));
+	world.Add(std::make_shared<Sphere>(Point3f(0, -1000, 0), 1000, std::make_shared<Lambertian>(checker)));
 
 	for (int a = -11; a < 11; a++) {
 		for (int b = -11; b < 11; b++) {
 			auto choose_mat = Random<Float>();
-			Point3f center(a + 0.9*Random<Float>(), 0.2, b + 0.9*Random<Float>());
+			Point3f center(a + 0.9 * Random<Float>(), 0.2, b + 0.9 * Random<Float>());
 
 			if ((center - Point3f(4, 0.2, 0)).Length() > 0.9) {
 				std::shared_ptr<Material> SphereMaterial;
@@ -77,14 +86,17 @@ ShapesSet RandomScene() {
 }
 
 int main(int argc, char** argv) {
-	Point3f lookfrom(13, 2, 3);
-	Point3f lookat(0, 0, 0);
+	/*Point3f lookfrom(13, 2, 3);
+	Point3f lookat(0, 0, 0);*/
 	Vector3f vup(0, 1, 0);
+	Point3f lookfrom = Point3f(13, 2, 3);
+	Point3f lookat = Point3f(0, 0, 0);
+	auto vfov = 20.0;
 	auto dist2Focus = 10.0f;
-	auto aperture = 0.1;
-	Camera camera(lookfrom, lookat, vup, 20, aspectRatio, aperture, dist2Focus);
+	auto aperture = 0.0;
+	Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
 
-	ShapesSet world = RandomScene();
+	ShapesSet world = Earth();
 	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {

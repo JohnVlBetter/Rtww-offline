@@ -10,6 +10,8 @@ struct IntersectionRecord {
 	Vector3f normal;
 	std::shared_ptr<Material> matPtr;
 	Float time;
+	Float u;
+	Float v;
 	bool isFrontFace;
 
 	inline void SetFaceNormal(const Ray& r, const Vector3f& outwardNormal) {

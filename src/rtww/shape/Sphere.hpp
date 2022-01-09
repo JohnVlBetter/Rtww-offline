@@ -10,6 +10,15 @@ public:
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
 	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const override;
 
+private:
+	static void GetUV(const Point3f& p, Float& u, Float& v) {
+		auto theta = acos(-p.y);
+		auto phi = atan2(-p.z, p.x) + Pi;
+
+		u = phi / (2 * Pi);
+		v = theta / Pi;
+	}
+
 public:
 	Point3f center;
 	Float radius;
@@ -41,6 +50,7 @@ bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRec
 	rec.hitPoint = r.At(root);
 	rec.normal = (rec.hitPoint - center) / radius;
 	rec.SetFaceNormal(r, rec.normal);
+	GetUV(Point3f(rec.normal.x, rec.normal.y, rec.normal.z), rec.u, rec.v);
 	rec.matPtr = material;
 
 	return true;
