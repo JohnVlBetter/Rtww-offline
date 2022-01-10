@@ -696,11 +696,19 @@ Vector3f RandomUnitVec() {
 }
 
 Vector3f RandomVec(Float min, Float max) {
-	return Vector3f(Random<double>(min, max), Random<double>(min, max), Random<double>(min, max));
+	return Vector3f(Random<Float>(min, max), Random<Float>(min, max), Random<Float>(min, max));
 }
 
 Vector3f RandomVec() {
-	return Vector3f(Random<double>(), Random<double>(), Random<double>());
+	return Vector3f(Random<Float>(), Random<Float>(), Random<Float>());
+}
+
+Point3f RandomPoint(Float min, Float max) {
+	return Point3f(Random<Float>(min, max), Random<Float>(min, max), Random<Float>(min, max));
+}
+
+Point3f RandomPoint() {
+	return Point3f(Random<Float>(), Random<Float>(), Random<Float>());
 }
 
 //Bounds2

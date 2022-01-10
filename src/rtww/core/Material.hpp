@@ -7,6 +7,7 @@ struct IntersectionRecord;
 class Material {
 public:
 	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const = 0;
+	virtual Color Emitted(double u, double v, const Point3f& p) const { return Color(0, 0, 0); }
 };
 
 class Lambertian :public Material {
@@ -78,4 +79,36 @@ private:
 public:
 	//Color albedo;
 	Float indexOfRefraction;
+};
+
+class DiffuseLight : public Material {
+public:
+	DiffuseLight(std::shared_ptr<Texture> a) : emit(a) {}
+	DiffuseLight(Color c) : emit(std::make_shared<SolidColorTexture>(c)) {}
+
+	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const override {
+		return false;
+	}
+
+	virtual Color Emitted(double u, double v, const Point3f& p) const override {
+		return emit->Value(u, v, p);
+	}
+
+public:
+	std::shared_ptr<Texture> emit;
+};
+
+class Isotropic : public Material {
+public:
+	Isotropic(Color c) : albedo(std::make_shared<SolidColorTexture>(c)) {}
+	Isotropic(std::shared_ptr<Texture> a) : albedo(a) {}
+
+	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const override {
+		scattered = Ray(rec.hitPoint, RandomInUnitSphere(), r.time);
+		attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
+		return true;
+	}
+
+public:
+	std::shared_ptr<Texture> albedo;
 };

@@ -1,32 +1,36 @@
 #include "../core/Core.hpp"
 #include "../shape/Sphere.hpp"
+#include "../shape/Medium.hpp"
+#include "../shape/Box.hpp"
+#include "../shape/Rectangle.hpp"
 #include "../core/World.hpp"
 #include "../core/Camera.hpp"
-#include "../core/Material.hpp"
+//#include "../core/Material.hpp"
 #include "../core/BVH.hpp"
 #include "../core/Texture.hpp"
 
-const uint16_t imageWidth = 200;
-const double aspectRatio = 3.0f / 2.0f;
-const int depth = 40;
+const uint16_t imageWidth = 1024;
+const double aspectRatio = 2.0f / 2.0f;
+const int depth = 50;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
-Color RayColor(const Ray& r, const ShapesSet& world, int depth){
+Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, int depth){
 	IntersectionRecord rec;
 
 	if (depth <= 0)
 		return Color(0, 0, 0);
 
-	if (world.Intersection(r, 0.001f, Infinity, rec)){
-		Ray scattered;
-		Color attenuation;
-		if (rec.matPtr->Scatter(r, rec, attenuation, scattered))
-			return attenuation * RayColor(scattered, world, depth - 1);
-		return Color(0, 0, 0);
+	if (!world.Intersection(r, 0.001f, Infinity, rec)){
+		return background;
 	}
-	Vector3f normalizedDirection = r.direction.Normalize();
-	auto t = 0.5f*(normalizedDirection.y + 1.0f);
-	return (1.0f - t)*Color(1.0f, 1.0f, 1.0f) + t * Color(0.5f, 0.7f, 1.0f);
+
+	Ray scattered;
+	Color attenuation;
+	Color emitted = rec.matPtr->Emitted(rec.u, rec.v, rec.hitPoint);
+	if (!rec.matPtr->Scatter(r, rec, attenuation, scattered))
+		return emitted;
+
+	return emitted + attenuation * RayColor(scattered, background, world, depth - 1);
 }
 
 ShapesSet Earth() {
@@ -85,18 +89,137 @@ ShapesSet RandomScene() {
 	return ShapesSet(std::make_shared<BVHNode>(world, 0.0, 1.0));
 }
 
+ShapesSet SimpleLight() {
+	ShapesSet objects;
+
+	auto tex = std::make_shared<SolidColorTexture>(Color(0.8,0.75,1.0));
+	objects.Add(std::make_shared<Sphere>(Point3f(0, -1000, 0), 1000, std::make_shared<Lambertian>(tex)));
+	objects.Add(std::make_shared<Sphere>(Point3f(0, 2, 0), 2, std::make_shared<Lambertian>(tex)));
+
+	auto difflight1 = std::make_shared<DiffuseLight>(Color(1.5, 1.5, 2));
+	auto difflight2 = std::make_shared<DiffuseLight>(Color(3, 2, 2));
+	objects.Add(std::make_shared<RectangleXY>(3, 5, 1, 3, -2, difflight1));
+	objects.Add(std::make_shared<Sphere>(Point3f(0, 6.5, 0), 2, difflight2));
+
+	return objects;
+}
+
+ShapesSet CornellBox() {
+	ShapesSet objects;
+
+	auto red = std::make_shared<Lambertian>(Color(.65, .05, .05));
+	auto white = std::make_shared<Lambertian>(Color(.73, .73, .73));
+	auto green = std::make_shared<Lambertian>(Color(.12, .45, .15));
+	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 15));
+
+	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, 555, green));
+	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, 0, red));
+	objects.Add(std::make_shared<RectangleXZ>(213, 343, 227, 332, 554, light));
+	objects.Add(std::make_shared<RectangleXZ>(0, 555, 0, 555, 0, white));
+	objects.Add(std::make_shared<RectangleXZ>(0, 555, 0, 555, 555, white));
+	objects.Add(std::make_shared<RectangleXY>(0, 555, 0, 555, 555, white));
+
+	objects.Add(std::make_shared<Box>(Point3f(130, 0, 65), Point3f(295, 165, 230), white));
+	objects.Add(std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), white));
+
+	return objects;
+}
+
+ShapesSet CornellSmoke() {
+	ShapesSet objects;
+
+	auto red = std::make_shared<Lambertian>(Color(.65, .05, .05));
+	auto white = std::make_shared<Lambertian>(Color(.73, .73, .73));
+	auto green = std::make_shared<Lambertian>(Color(.12, .45, .15));
+	auto light = std::make_shared<DiffuseLight>(Color(7, 7, 7));
+
+	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, 555, green));
+	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, 0, red));
+	objects.Add(std::make_shared<RectangleXZ>(113, 443, 127, 432, 554, light));
+	objects.Add(std::make_shared<RectangleXZ>(0, 555, 0, 555, 555, white));
+	objects.Add(std::make_shared<RectangleXZ>(0, 555, 0, 555, 0, white));
+	objects.Add(std::make_shared<RectangleXY>(0, 555, 0, 555, 555, white));
+
+	std::shared_ptr<Shape> box1 = std::make_shared<Box>(Point3f(0, 0, 0), Point3f(165, 330, 165), white);
+
+	std::shared_ptr<Shape> box2 = std::make_shared<Box>(Point3f(0, 0, 0), Point3f(165, 165, 165), white);
+
+	objects.Add(std::make_shared<Medium>(box1, 0.01, Color(0, 0, 0)));
+	objects.Add(std::make_shared<Medium>(box2, 0.01, Color(1, 1, 1)));
+
+	return objects;
+}
+
+ShapesSet FinalScene() {
+	ShapesSet boxes1;
+	auto ground = std::make_shared<Lambertian>(Color(0.48, 0.83, 0.53));
+
+	const int boxes_per_side = 20;
+	for (int i = 0; i < boxes_per_side; i++) {
+		for (int j = 0; j < boxes_per_side; j++) {
+			auto w = 100.0;
+			auto x0 = -1000.0 + i * w;
+			auto z0 = -1000.0 + j * w;
+			auto y0 = 0.0;
+			auto x1 = x0 + w;
+			auto y1 = Random<Float>(1, 101);
+			auto z1 = z0 + w;
+
+			boxes1.Add(std::make_shared<Box>(Point3f(x0, y0, z0), Point3f(x1, y1, z1), ground));
+		}
+	}
+
+	ShapesSet objects;
+
+	objects.Add(std::make_shared<BVHNode>(boxes1, 0, 1));
+
+	auto light = std::make_shared<DiffuseLight>(Color(7, 7, 7));
+	objects.Add(std::make_shared<RectangleXZ>(123, 423, 147, 412, 554, light));
+
+	auto center1 = Point3f(400, 400, 200);
+	auto sphere_material = std::make_shared<Lambertian>(Color(0.7, 0.3, 0.1));
+	objects.Add(std::make_shared<Sphere>(center1, 50, sphere_material));
+
+	objects.Add(std::make_shared<Sphere>(Point3f(260, 150, 45), 50, std::make_shared<Dielectric>(1.5)));
+	objects.Add(std::make_shared<Sphere>(
+		Point3f(0, 150, 145), 50, std::make_shared<Metal>(Color(0.8, 0.8, 0.9), 1.0)
+		));
+
+	auto boundary = std::make_shared<Sphere>(Point3f(360, 150, 145), 70, std::make_shared<Dielectric>(1.5));
+	objects.Add(boundary);
+	objects.Add(std::make_shared<Medium>(boundary, 0.2, Color(0.2, 0.4, 0.9)));
+	boundary = std::make_shared<Sphere>(Point3f(0, 0, 0), 5000, std::make_shared<Dielectric>(1.5));
+	objects.Add(std::make_shared<Medium>(boundary, .0001, Color(1, 1, 1)));
+
+	auto emat = std::make_shared<Lambertian>(std::make_shared<ImageTexture>("../../../resources/earthmap.jpg"));
+	objects.Add(std::make_shared<Sphere>(Point3f(400, 200, 400), 100, emat));
+	objects.Add(std::make_shared<Sphere>(Point3f(220, 280, 300), 80, std::make_shared<Metal>(Color(0.9, 0.9, 0.9), 0.9)));
+
+	ShapesSet boxes2;
+	auto white = std::make_shared<Lambertian>(Color(.73, .73, .73));
+	int ns = 1000;
+	for (int j = 0; j < ns; j++) {
+		boxes2.Add(std::make_shared<Sphere>(RandomPoint(0, 165) + Point3f(-100, 270, 395), 10, white));
+	}
+
+	objects.Add(std::make_shared<BVHNode>(boxes2, 0.0, 1.0));
+
+	return objects;
+}
+
 int main(int argc, char** argv) {
 	/*Point3f lookfrom(13, 2, 3);
 	Point3f lookat(0, 0, 0);*/
+	Color background(0.00, 0.00, 0.00);
 	Vector3f vup(0, 1, 0);
-	Point3f lookfrom = Point3f(13, 2, 3);
-	Point3f lookat = Point3f(0, 0, 0);
-	auto vfov = 20.0;
+	Point3f lookfrom = Point3f(478, 278, -600);
+	Point3f lookat = Point3f(278, 278, 0);
+	auto vfov = 40.0;
 	auto dist2Focus = 10.0f;
 	auto aperture = 0.0;
 	Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
 
-	ShapesSet world = Earth();
+	ShapesSet world = FinalScene();
 	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {
@@ -107,7 +230,7 @@ int main(int argc, char** argv) {
 				auto u = Float(i + Random<Float>()) / (imageWidth - 1);
 				auto v = Float(j + Random<Float>()) / (imageHeight - 1);
 				Ray r = camera.GenerateRay(u, v);
-				pixelColor += RayColor(r, world, depth);
+				pixelColor += RayColor(r, background, world, depth);
 			}
 			std::cout << pixelColor;
 		}
