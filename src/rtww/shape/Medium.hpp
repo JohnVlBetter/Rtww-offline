@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../core/World.hpp"
-#include "../core/Material.hpp"
-#include "../core/Texture.hpp"
+#include "core/World.hpp"
+#include "core/Material.hpp"
+#include "core/Texture.hpp"
 
 class Medium : public Shape {
 public:

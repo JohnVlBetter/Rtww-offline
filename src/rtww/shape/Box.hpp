@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Rectangle.hpp"
-#include "../core/World.hpp"
+#include "core/World.hpp"
 
 class Box : public Shape {
 public:

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core/Shape.hpp"
+#include "core/Shape.hpp"
 
 class Sphere :public Shape {
 public:

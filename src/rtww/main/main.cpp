@@ -1,13 +1,13 @@
-#include "../core/Core.hpp"
-#include "../shape/Sphere.hpp"
-#include "../shape/Medium.hpp"
-#include "../shape/Box.hpp"
-#include "../shape/Rectangle.hpp"
-#include "../core/World.hpp"
-#include "../core/Camera.hpp"
-//#include "../core/Material.hpp"
-#include "../core/BVH.hpp"
-#include "../core/Texture.hpp"
+#include "core/Core.hpp"
+#include "shape/Sphere.hpp"
+#include "shape/Medium.hpp"
+#include "shape/Box.hpp"
+#include "shape/Rectangle.hpp"
+#include "core/World.hpp"
+#include "core/Camera.hpp"
+//#include "core/Material.hpp"
+#include "core/BVH.hpp"
+#include "core/Texture.hpp"
 
 const uint16_t imageWidth = 400;
 const double aspectRatio = 2.0f / 2.0f;
