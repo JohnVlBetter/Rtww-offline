@@ -9,9 +9,9 @@
 #include "../core/BVH.hpp"
 #include "../core/Texture.hpp"
 
-const uint16_t imageWidth = 1024;
+const uint16_t imageWidth = 400;
 const double aspectRatio = 2.0f / 2.0f;
-const int depth = 50;
+const int depth = 40;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
 Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, int depth){
