@@ -48,6 +48,21 @@ public:
 		outputBox = AABB(Point3f(x0, y - 0.0001f, z0), Point3f(x1, y + 0.0001f, z1));
 		return true;
 	}
+	virtual Float PDFValue(const Point3f& o, const Vector3f& v) const {
+		IntersectionRecord rec;
+		if (!this->Intersection(Ray(o, v), 0.001, Infinity, rec))
+			return 0;
+
+		auto area = (x1 - x0)*(z1 - z0);
+		auto distanceSquared = rec.time * rec.time * v.LengthSquared();
+		auto cosine = fabs(Dot(v, rec.normal) / v.Length());
+
+		return distanceSquared / (cosine * area);
+	}
+	virtual Vector3f ShapeRandom(const Point3f& o) const {
+		auto randomPoint = Point3f(Random<Float>(x0, x1), y, Random<Float>(z0, z1));
+		return randomPoint - o;
+	}
 
 public:
 	Float x0, x1, z0, z1, y;

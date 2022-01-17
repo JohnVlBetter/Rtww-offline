@@ -1,13 +1,22 @@
 #pragma
 #include "Core.hpp"
 #include "Texture.hpp"
+#include "PDF.hpp"
 
 struct IntersectionRecord;
 
+struct ScatterRecord {
+	Ray specularRay;
+	bool isSpecular;
+	Color attenuation;
+	std::shared_ptr<PDF> pdfPtr;
+};
+
 class Material {
 public:
-	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const = 0;
-	virtual Color Emitted(double u, double v, const Point3f& p) const { return Color(0, 0, 0); }
+	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, ScatterRecord& srec) const { return false; };
+	virtual Float ScatteringPDF(const Ray& r, const IntersectionRecord& rec, const Ray& scattered) const { return 0; }
+	virtual Color Emitted(const Ray& r, const IntersectionRecord& rec, Float u, Float v, const Point3f& p) const { return Color(0, 0, 0); }
 };
 
 class Lambertian :public Material {
@@ -15,16 +24,17 @@ public:
 	Lambertian(const Color& c) :albedo(std::make_shared<SolidColorTexture>(c)) {}
 	Lambertian(std::shared_ptr<Texture> a) :albedo(a) {}
 
-	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const override {
-		auto scatterDir = rec.normal + RandomUnitVec();
-
-		if (scatterDir.IsNearZero())
-			scatterDir = rec.normal;
-
-		scattered = Ray(rec.hitPoint, scatterDir);
-		attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
+	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, ScatterRecord& srec) const override {
+		srec.isSpecular = false;
+		srec.attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
+		srec.pdfPtr = std::make_shared<CosinePDF>(rec.normal);
 		return true;
 	}
+	virtual Float ScatteringPDF(const Ray& r, const IntersectionRecord& rec, const Ray& scattered) const {
+		auto cosine = Dot(rec.normal, scattered.direction.Normalize());
+		return cosine < 0 ? 0 : cosine / Pi;
+	}
+
 
 public:
 	std::shared_ptr<Texture> albedo;
@@ -34,11 +44,13 @@ class Metal : public Material {
 public:
 	Metal(const Color& c, Float f) :albedo(c), fuzz(f < 1.0f ? f : 1.0f) {}
 
-	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const override {
+	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, ScatterRecord& srec) const override {
 		Vector3f reflected = r.direction.Normalize().Reflect(rec.normal);
-		scattered = Ray(rec.hitPoint, reflected + fuzz * RandomInUnitSphere());
-		attenuation = albedo;
-		return Dot(scattered.direction, rec.normal) > 0;
+		srec.specularRay = Ray(rec.hitPoint, reflected + fuzz * RandomInUnitSphere());
+		srec.attenuation = albedo;
+		srec.isSpecular = true;
+		srec.pdfPtr = 0;
+		return true;
 	}
 
 public:
@@ -50,8 +62,10 @@ class Dielectric : public Material {
 public:
 	Dielectric(/*const Color& c, */Float ir) :/*albedo(c), */indexOfRefraction(ir) {}
 
-	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const override {
-		attenuation = Color(1.0, 1.0, 1.0);//TODO albedo * 0.3f;
+	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, ScatterRecord& srec) const override {
+		srec.isSpecular = true;
+		srec.pdfPtr = nullptr;
+		srec.attenuation = Color(1.0, 1.0, 1.0);
 		Float refractionRatio = rec.isFrontFace ? (1.0f / indexOfRefraction) : indexOfRefraction;
 		auto unitDir = r.direction.Normalize();
 
@@ -59,12 +73,12 @@ public:
 		Float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
 		bool canRefraction = refractionRatio * sinTheta <= 1.0f;
 		Vector3f dir;
-		if(!canRefraction || Reflectance(cosTheta, refractionRatio) > Random<Float>()) 
+		if (!canRefraction || Reflectance(cosTheta, refractionRatio) > Random<Float>())
 			dir = unitDir.Reflect(rec.normal);
-		else 
+		else
 			dir = unitDir.Refract(rec.normal, refractionRatio);
 
-		scattered = Ray(rec.hitPoint, dir);
+		srec.specularRay = Ray(rec.hitPoint, dir, r.time);
 		return true;
 	}
 
@@ -86,11 +100,13 @@ public:
 	DiffuseLight(std::shared_ptr<Texture> a) : emit(a) {}
 	DiffuseLight(Color c) : emit(std::make_shared<SolidColorTexture>(c)) {}
 
-	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const override {
+	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, ScatterRecord& srec) const override {
 		return false;
 	}
 
-	virtual Color Emitted(double u, double v, const Point3f& p) const override {
+	virtual Color Emitted(const Ray& r, const IntersectionRecord& rec, Float u, Float v, const Point3f& p) const override {
+		if (!rec.isFrontFace)
+			return Color(0, 0, 0);
 		return emit->Value(u, v, p);
 	}
 
@@ -98,17 +114,17 @@ public:
 	std::shared_ptr<Texture> emit;
 };
 
-class Isotropic : public Material {
-public:
-	Isotropic(Color c) : albedo(std::make_shared<SolidColorTexture>(c)) {}
-	Isotropic(std::shared_ptr<Texture> a) : albedo(a) {}
-
-	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered) const override {
-		scattered = Ray(rec.hitPoint, RandomInUnitSphere(), r.time);
-		attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
-		return true;
-	}
-
-public:
-	std::shared_ptr<Texture> albedo;
-};
+//class Isotropic : public Material {
+//public:
+//	Isotropic(Color c) : albedo(std::make_shared<SolidColorTexture>(c)) {}
+//	Isotropic(std::shared_ptr<Texture> a) : albedo(a) {}
+//
+//	virtual bool Scatter(const Ray& r, const IntersectionRecord& rec, Color& attenuation, Ray& scattered, Float& pdf) const override {
+//		scattered = Ray(rec.hitPoint, RandomInUnitSphere(), r.time);
+//		attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
+//		return true;
+//	}
+//
+//public:
+//	std::shared_ptr<Texture> albedo;
+//};

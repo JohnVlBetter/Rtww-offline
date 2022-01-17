@@ -691,24 +691,47 @@ Vector3f RandomInHemisphere(const Vector3f& normal) {
 	return -v;
 }
 
-Vector3f RandomUnitVec() {
+inline Vector3f RandomUnitVec() {
 	return RandomInUnitSphere().Normalize();
 }
 
-Vector3f RandomVec(Float min, Float max) {
+inline Vector3f RandomVec(Float min, Float max) {
 	return Vector3f(Random<Float>(min, max), Random<Float>(min, max), Random<Float>(min, max));
 }
 
-Vector3f RandomVec() {
+inline Vector3f RandomVec() {
 	return Vector3f(Random<Float>(), Random<Float>(), Random<Float>());
 }
 
-Point3f RandomPoint(Float min, Float max) {
+inline Point3f RandomPoint(Float min, Float max) {
 	return Point3f(Random<Float>(min, max), Random<Float>(min, max), Random<Float>(min, max));
 }
 
-Point3f RandomPoint() {
+inline Point3f RandomPoint() {
 	return Point3f(Random<Float>(), Random<Float>(), Random<Float>());
+}
+
+inline Vector3f RandomCosineDirection() {
+	auto r1 = Random<Float>();
+	auto r2 = Random<Float>();
+	auto z = sqrt(1 - r2);
+	auto phi = 2 * Pi*r1;
+	auto x = cos(phi)*sqrt(r2);
+	auto y = sin(phi)*sqrt(r2);
+
+	return Vector3f(x, y, z);
+}
+
+inline Vector3f Random2Sphere(double radius, double distanceSquared) {
+	auto r1 = Random<Float>();
+	auto r2 = Random<Float>();
+	auto z = 1 + r2 * (sqrt(1 - radius * radius / distanceSquared) - 1);
+
+	auto phi = 2 * Pi*r1;
+	auto x = cos(phi)*sqrt(1 - z * z);
+	auto y = sin(phi)*sqrt(1 - z * z);
+
+	return Vector3f(x, y, z);
 }
 
 //Bounds2
@@ -1192,8 +1215,8 @@ Quaternion Slerp(Float n, const Quaternion& q1, const Quaternion& q2) {
 class Ray {
 public:
 	//public methods
-	Ray() : tMax(Infinity), time(0.f) {}
-	Ray(const Point3f& o, const Vector3f& d, Float tMax = Infinity, Float t = 0.0f) : origin(o), direction(d), time(t), tMax(tMax) {}
+	Ray(){}
+	Ray(const Point3f& o, const Vector3f& d, Float t = 0.0f) : origin(o), direction(d), time(t) {}
 
 	Point3f At(Float t) const { return origin + t * direction; }
 
@@ -1204,7 +1227,7 @@ public:
 	//public data
 	Point3f origin;
 	Vector3f direction;
-	Float time, tMax;
+	Float time;
 };
 
 inline std::ostream &operator<<(std::ostream &o, const Ray &r) {

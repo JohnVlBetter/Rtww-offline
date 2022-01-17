@@ -3,18 +3,20 @@
 #include "shape/Medium.hpp"
 #include "shape/Box.hpp"
 #include "shape/Rectangle.hpp"
+#include "shape/FlipFace.hpp"
 #include "core/World.hpp"
 #include "core/Camera.hpp"
 //#include "core/Material.hpp"
 #include "core/BVH.hpp"
 #include "core/Texture.hpp"
+#include "core/PDF.hpp"
 
-const uint16_t imageWidth = 400;
-const double aspectRatio = 2.0f / 2.0f;
-const int depth = 40;
+const uint16_t imageWidth = 600;
+const double aspectRatio = 1.0f;
+const int depth = 50;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
-Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, int depth){
+Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, std::shared_ptr<Shape>& lights, int depth){
 	IntersectionRecord rec;
 
 	if (depth <= 0)
@@ -24,16 +26,28 @@ Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, in
 		return background;
 	}
 
-	Ray scattered;
-	Color attenuation;
-	Color emitted = rec.matPtr->Emitted(rec.u, rec.v, rec.hitPoint);
-	if (!rec.matPtr->Scatter(r, rec, attenuation, scattered))
+	ScatterRecord srec;
+	Color emitted = rec.matPtr->Emitted(r, rec, rec.u, rec.v, rec.hitPoint);
+	if (!rec.matPtr->Scatter(r, rec, srec))
 		return emitted;
 
-	return emitted + attenuation * RayColor(scattered, background, world, depth - 1);
+	if (srec.isSpecular) {
+		return srec.attenuation
+			* RayColor(srec.specularRay, background, world, lights, depth - 1);
+	}
+
+	auto light_ptr = std::make_shared<ShapePDF>(lights, rec.hitPoint);
+	MixturePDF p(light_ptr, srec.pdfPtr);
+
+	Ray scattered = Ray(rec.hitPoint, p.Generate(), r.time);
+	auto pdf_val = p.Value(scattered.direction);
+
+	return emitted
+		+ srec.attenuation * rec.matPtr->ScatteringPDF(r, rec, scattered)
+		* RayColor(scattered, background, world, lights, depth - 1) / pdf_val;
 }
 
-ShapesSet Earth() {
+/*ShapesSet Earth() {
 	auto earthTexture = std::make_shared<ImageTexture>("../../../resources/earthmap.jpg");
 	auto earthSurface = std::make_shared<Lambertian>(earthTexture);
 	auto globe = std::make_shared<Sphere>(Point3f(0, 0, 0), 2, earthSurface);
@@ -103,7 +117,7 @@ ShapesSet SimpleLight() {
 
 	return objects;
 }
-
+*/
 ShapesSet CornellBox() {
 	ShapesSet objects;
 
@@ -114,18 +128,23 @@ ShapesSet CornellBox() {
 
 	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, 555, green));
 	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, 0, red));
-	objects.Add(std::make_shared<RectangleXZ>(213, 343, 227, 332, 554, light));
+	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(213, 343, 227, 332, 554, light)));
 	objects.Add(std::make_shared<RectangleXZ>(0, 555, 0, 555, 0, white));
 	objects.Add(std::make_shared<RectangleXZ>(0, 555, 0, 555, 555, white));
 	objects.Add(std::make_shared<RectangleXY>(0, 555, 0, 555, 555, white));
 
-	objects.Add(std::make_shared<Box>(Point3f(130, 0, 65), Point3f(295, 165, 230), white));
-	objects.Add(std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), white));
+	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.8, 0.85, 0.88), 0.0);
+	std::shared_ptr<Shape> box1 = std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), aluminum);
+	objects.Add(box1);
+	//objects.Add(std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), white));
+
+	auto glass = std::make_shared<Dielectric>(1.5);
+	objects.Add(std::make_shared<Sphere>(Point3f(190, 90, 190), 90, glass));
 
 	return objects;
 }
 
-ShapesSet CornellSmoke() {
+/*ShapesSet CornellSmoke() {
 	ShapesSet objects;
 
 	auto red = std::make_shared<Lambertian>(Color(.65, .05, .05));
@@ -201,25 +220,25 @@ ShapesSet FinalScene() {
 	for (int j = 0; j < ns; j++) {
 		boxes2.Add(std::make_shared<Sphere>(RandomPoint(0, 165) + Point3f(-100, 270, 395), 10, white));
 	}
-
 	objects.Add(std::make_shared<BVHNode>(boxes2, 0.0, 1.0));
 
 	return objects;
-}
+}*/
 
 int main(int argc, char** argv) {
 	/*Point3f lookfrom(13, 2, 3);
 	Point3f lookat(0, 0, 0);*/
 	Color background(0.00, 0.00, 0.00);
 	Vector3f vup(0, 1, 0);
-	Point3f lookfrom = Point3f(478, 278, -600);
+	Point3f lookfrom = Point3f(278, 278, -800);
 	Point3f lookat = Point3f(278, 278, 0);
 	auto vfov = 40.0;
 	auto dist2Focus = 10.0f;
 	auto aperture = 0.0;
 	Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
 
-	ShapesSet world = FinalScene();
+	ShapesSet world = CornellBox();
+	std::shared_ptr<Shape> lights = std::make_shared<RectangleXZ>(213, 343, 227, 332, 554, std::shared_ptr<Material>());
 	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {
@@ -230,7 +249,7 @@ int main(int argc, char** argv) {
 				auto u = Float(i + Random<Float>()) / (imageWidth - 1);
 				auto v = Float(j + Random<Float>()) / (imageHeight - 1);
 				Ray r = camera.GenerateRay(u, v);
-				pixelColor += RayColor(r, background, world, depth);
+				pixelColor += RayColor(r, background, world, lights, depth);
 			}
 			std::cout << pixelColor;
 		}
