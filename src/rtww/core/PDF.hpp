@@ -14,7 +14,7 @@ public:
 
 class CosinePDF : public PDF {
 public:
-	CosinePDF(const Vector3f& w) { uvw.build_from_w(w); }
+	CosinePDF(const Vector3f& w) { uvw.BuildFromW(w); }
 
 	virtual double Value(const Vector3f& direction) const override {
 		auto cosine = Dot(direction.Normalize(), uvw.w());
@@ -22,7 +22,7 @@ public:
 	}
 
 	virtual Vector3f Generate() const override {
-		return uvw.local(RandomCosineDirection());
+		return uvw.Local(RandomCosineDirection());
 	}
 
 public:

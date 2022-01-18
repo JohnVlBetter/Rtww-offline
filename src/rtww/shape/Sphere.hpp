@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Shape.hpp"
+#include "core/OrthonormalBasis.hpp"
 
 class Sphere :public Shape {
 public:
@@ -9,6 +10,8 @@ public:
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
 	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const override;
+	virtual Float PDFValue(const Point3f& o, const Vector3f& v) const;
+	virtual Vector3f ShapeRandom(const Point3f& o) const;
 
 private:
 	static void GetUV(const Point3f& p, Float& u, Float& v) {
@@ -28,6 +31,23 @@ public:
 bool Sphere::BoundingBox(Float time0, Float time1, AABB& outputBox) const {
 	outputBox = AABB(center - Vector3f(radius, radius, radius), center + Vector3f(radius, radius, radius));
 	return true;
+}
+
+Float Sphere::PDFValue(const Point3f & o, const Vector3f & v) const{
+	IntersectionRecord rec;
+	if (!Intersection(Ray(o, v), 0.001, Infinity, rec))
+		return 0;
+	auto cosThetaMax = sqrt(1 - radius * radius / (center - o).LengthSquared());
+	auto solidAngle = 2 * Pi*(1 - cosThetaMax);
+	return 1 / solidAngle;
+}
+
+Vector3f Sphere::ShapeRandom(const Point3f & o) const{
+	Vector3f dir = center - o;
+	auto distanceSquared = dir.LengthSquared();
+	OrthonormalBasis onb;
+	onb.BuildFromW(dir);
+	return onb.Local(Random2Sphere(radius, distanceSquared));
 }
 
 bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {

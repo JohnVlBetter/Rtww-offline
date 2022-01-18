@@ -16,7 +16,7 @@ const double aspectRatio = 1.0f;
 const int depth = 50;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
-Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, std::shared_ptr<Shape>& lights, int depth){
+Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, std::shared_ptr<Shape> lights, int depth){
 	IntersectionRecord rec;
 
 	if (depth <= 0)
@@ -238,7 +238,10 @@ int main(int argc, char** argv) {
 	Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
 
 	ShapesSet world = CornellBox();
-	std::shared_ptr<Shape> lights = std::make_shared<RectangleXZ>(213, 343, 227, 332, 554, std::shared_ptr<Material>());
+
+	auto lights = std::make_shared<ShapesSet>();
+	lights->Add(std::make_shared<RectangleXZ>(213, 343, 227, 332, 554, std::shared_ptr<Material>()));
+	lights->Add(std::make_shared<Sphere>(Point3f(190, 90, 190), 90, std::shared_ptr<Material>()));
 	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {
