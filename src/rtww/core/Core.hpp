@@ -11,12 +11,16 @@ inline Color operator * (const Color& c1, const Color& c2) {
 	return Color(c1.x * c2.x, c1.y * c2.y, c1.z * c2.z);
 }
 
-const int samplesPerPixel = 100;
+const int samplesPerPixel = 500;
 
 std::ostream& operator << (std::ostream &o, const Color c) {
 	auto r = c.x;
 	auto g = c.y;
 	auto b = c.z;
+
+	if (r != r) r = 0.0;
+	if (g != g) g = 0.0;
+	if (b != b) b = 0.0;
 
 	auto scale = 1.0f / samplesPerPixel;
 	r = sqrt(r * scale);

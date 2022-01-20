@@ -11,9 +11,9 @@
 #include "core/Texture.hpp"
 #include "core/PDF.hpp"
 
-const uint16_t imageWidth = 600;
+const uint16_t imageWidth = 400;
 const double aspectRatio = 1.0f;
-const int depth = 50;
+const int depth = 60;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
 Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, std::shared_ptr<Shape> lights, int depth){
@@ -134,7 +134,9 @@ ShapesSet CornellBox() {
 	objects.Add(std::make_shared<RectangleXY>(0, 555, 0, 555, 555, white));
 
 	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.8, 0.85, 0.88), 0.0);
-	std::shared_ptr<Shape> box1 = std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), aluminum);
+	std::shared_ptr<Shape> box1 = std::make_shared<Box>(Point3f(0, 0, 0), Point3f(165, 330, 165), aluminum);
+	box1 = std::make_shared<TRotateY>(box1, 15);
+	box1 = std::make_shared<TTranslate>(box1, Vector3f(265, 0, 295));
 	objects.Add(box1);
 	//objects.Add(std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), white));
 
