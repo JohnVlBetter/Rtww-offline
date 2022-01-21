@@ -11,9 +11,9 @@
 #include "core/Texture.hpp"
 #include "core/PDF.hpp"
 
-const uint16_t imageWidth = 400;
+const uint16_t imageWidth = 1024;
 const double aspectRatio = 1.0f;
-const int depth = 60;
+const int depth = 50;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
 Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, std::shared_ptr<Shape> lights, int depth){
@@ -227,6 +227,40 @@ ShapesSet FinalScene() {
 	return objects;
 }*/
 
+ShapesSet CornellBox2() {
+	ShapesSet objects;
+
+	auto red = std::make_shared<Lambertian>(Color(.65, .05, .05));
+	auto white = std::make_shared<Lambertian>(Color(.73, .73, .73));
+	auto pink = std::make_shared<Lambertian>(Color(1, .412, .706));
+	auto blue = std::make_shared<Lambertian>(Color(.12, .15, .65));
+	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 15));
+
+	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, 605, blue));
+	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, -50, red));
+	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, light)));
+	objects.Add(std::make_shared<RectangleXZ>(-50, 605, -200, 555, 0, white));
+	objects.Add(std::make_shared<RectangleXZ>(-50, 605, 0, 555, 555, white));
+	objects.Add(std::make_shared<RectangleXY>(-50, 605, 0, 555, 555, white));
+
+	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.8, 0.85, 0.88), 0.0);
+	std::shared_ptr<Shape> box1 = std::make_shared<Box>(Point3f(0, 0, 0), Point3f(165, 350, 165), aluminum);
+	box1 = std::make_shared<TRotateY>(box1, 40);
+	box1 = std::make_shared<TTranslate>(box1, Vector3f(0, 0, 275));
+	objects.Add(box1);
+
+	std::shared_ptr<Shape> box2 = std::make_shared<Box>(Point3f(0, 0, 0), Point3f(165, 280, 165), pink);
+	box2 = std::make_shared<TRotateY>(box2, 50);
+	box2 = std::make_shared<TTranslate>(box2, Vector3f(350, 1.5, 275));
+	objects.Add(box2);
+	//objects.Add(std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), white));
+
+	auto glass = std::make_shared<Dielectric>(1.5);
+	objects.Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, glass));
+
+	return objects;
+}
+
 int main(int argc, char** argv) {
 	/*Point3f lookfrom(13, 2, 3);
 	Point3f lookat(0, 0, 0);*/
@@ -239,11 +273,11 @@ int main(int argc, char** argv) {
 	auto aperture = 0.0;
 	Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
 
-	ShapesSet world = CornellBox();
+	ShapesSet world = CornellBox2();
 
 	auto lights = std::make_shared<ShapesSet>();
-	lights->Add(std::make_shared<RectangleXZ>(213, 343, 227, 332, 554, std::shared_ptr<Material>()));
-	lights->Add(std::make_shared<Sphere>(Point3f(190, 90, 190), 90, std::shared_ptr<Material>()));
+	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
+	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
 	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {
