@@ -10,6 +10,7 @@
 #include "core/BVH.hpp"
 #include "core/Texture.hpp"
 #include "core/PDF.hpp"
+#include "core/ThreadPool.h"
 #include <thread>
 #include <Windows.h>
 
@@ -279,7 +280,8 @@ ShapesSet world = CornellBox2();
 
 auto lights = std::make_shared<ShapesSet>();
 
-void Draw(int index) {
+std::vector<Color> Draw(int index) {
+	std::vector<Color> t(imageHeight, Color(0, 0, 0));
 	for (int i = 0; i < imageWidth; ++i) {
 		Color pixelColor(0, 0, 0);
 		for (int k = 0; k < samplesPerPixel; ++k) {
@@ -288,9 +290,10 @@ void Draw(int index) {
 			Ray r = camera.GenerateRay(u, v);
 			pixelColor += RayColor(r, background, world, lights, depth);
 		}
-		pixels[i][index] = pixelColor;
+		t[i] = pixelColor;
 	}
 	std::cerr << "\nDone.\n";
+	return t;
 }
 
 int main(int argc, char** argv) {
@@ -300,19 +303,28 @@ int main(int argc, char** argv) {
 	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
 	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
+	ThreadPool pool(10);
+	std::vector<std::future<std::vector<Color>>> result(imageHeight);
 	for (int j = imageHeight - 1; j >= 0; --j) {
 		//std::cerr << "\rScanlines remaining: " << (double(j) / imageHeight) * 100.0f << std::flush;
-		std::thread t(Draw, j);
-		t.detach();
-		//Draw(j); 12672 33422
+		//std::thread t(Draw, j);
+		//t.detach();
+
+
+		//Draw(j); 12672 33422 12500
+
+
+		result[j] = pool.enqueue(Draw, j);
 	}
+	for (int j = imageHeight - 1; j >= 0; --j) {
+		pixels[j] = result[j].get();
+	}
+	//getchar();
 	std::cerr << ::GetTickCount() - start << std::flush;
-	getchar();
 	for (int j = imageHeight - 1; j >= 0; --j) {
 		for (int i = 0; i < imageWidth; ++i) {
 			std::cout << pixels[i][j];
 		}
 	}
-	std::cerr << "done";
 	return 0;
 }
