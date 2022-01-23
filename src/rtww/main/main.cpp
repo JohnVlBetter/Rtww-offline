@@ -10,8 +10,10 @@
 #include "core/BVH.hpp"
 #include "core/Texture.hpp"
 #include "core/PDF.hpp"
+#include <thread>
+#include <Windows.h>
 
-const uint16_t imageWidth = 1024;
+const uint16_t imageWidth = 400;
 const double aspectRatio = 1.0f;
 const int depth = 50;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
@@ -261,39 +263,56 @@ ShapesSet CornellBox2() {
 	return objects;
 }
 
+std::vector<std::vector<Color>> pixels(imageWidth, std::vector<Color>(imageHeight, Color(0, 0, 0)));
+
+
+Color background(0.00, 0.00, 0.00);
+Vector3f vup(0, 1, 0);
+Point3f lookfrom = Point3f(278, 278, -800);
+Point3f lookat = Point3f(278, 278, 0);
+auto vfov = 40.0;
+auto dist2Focus = 10.0f;
+auto aperture = 0.0;
+Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
+
+ShapesSet world = CornellBox2();
+
+auto lights = std::make_shared<ShapesSet>();
+
+void Draw(int index) {
+	for (int i = 0; i < imageWidth; ++i) {
+		Color pixelColor(0, 0, 0);
+		for (int k = 0; k < samplesPerPixel; ++k) {
+			auto u = Float(i + Random<Float>()) / (imageWidth - 1);
+			auto v = Float(index + Random<Float>()) / (imageHeight - 1);
+			Ray r = camera.GenerateRay(u, v);
+			pixelColor += RayColor(r, background, world, lights, depth);
+		}
+		pixels[i][index] = pixelColor;
+	}
+	std::cerr << "\nDone.\n";
+}
+
 int main(int argc, char** argv) {
 	/*Point3f lookfrom(13, 2, 3);
 	Point3f lookat(0, 0, 0);*/
-	Color background(0.00, 0.00, 0.00);
-	Vector3f vup(0, 1, 0);
-	Point3f lookfrom = Point3f(278, 278, -800);
-	Point3f lookat = Point3f(278, 278, 0);
-	auto vfov = 40.0;
-	auto dist2Focus = 10.0f;
-	auto aperture = 0.0;
-	Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
-
-	ShapesSet world = CornellBox2();
-
-	auto lights = std::make_shared<ShapesSet>();
+	DWORD start = ::GetTickCount(); //获取毫秒级数目  
 	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
 	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
-	
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	for (int j = imageHeight - 1; j >= 0; --j) {
-		std::cerr << "\rScanlines remaining: " << (double(j) / imageHeight) * 100.0f << std::flush;
+		//std::cerr << "\rScanlines remaining: " << (double(j) / imageHeight) * 100.0f << std::flush;
+		std::thread t(Draw, j);
+		t.detach();
+		//Draw(j); 12672 33422
+	}
+	std::cerr << ::GetTickCount() - start << std::flush;
+	getchar();
+	for (int j = imageHeight - 1; j >= 0; --j) {
 		for (int i = 0; i < imageWidth; ++i) {
-			Color pixelColor(0, 0, 0);
-			for (int k = 0; k < samplesPerPixel; ++k){
-				auto u = Float(i + Random<Float>()) / (imageWidth - 1);
-				auto v = Float(j + Random<Float>()) / (imageHeight - 1);
-				Ray r = camera.GenerateRay(u, v);
-				pixelColor += RayColor(r, background, world, lights, depth);
-			}
-			std::cout << pixelColor;
+			std::cout << pixels[i][j];
 		}
 	}
-	std::cerr << "\nDone.\n";
-
+	std::cerr << "done";
 	return 0;
 }
