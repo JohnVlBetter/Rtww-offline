@@ -276,7 +276,7 @@ auto dist2Focus = 10.0f;
 auto aperture = 0.0;
 Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
 
-ShapesSet world = CornellBox2();
+ShapesSet world = CornellBox();
 
 auto lights = std::make_shared<ShapesSet>();
 
@@ -323,7 +323,7 @@ int main(int argc, char** argv) {
 	std::cerr << ::GetTickCount() - start << std::flush;
 	for (int j = imageHeight - 1; j >= 0; --j) {
 		for (int i = 0; i < imageWidth; ++i) {
-			std::cout << pixels[i][j];
+			std::cout << pixels[j][i];
 		}
 	}
 	return 0;
