@@ -280,6 +280,8 @@ ShapesSet world = CornellBox();
 
 auto lights = std::make_shared<ShapesSet>();
 
+std::mutex consoleMutex;
+
 std::vector<Color> Draw(int index) {
 	std::vector<Color> t(imageHeight, Color(0, 0, 0));
 	for (int i = 0; i < imageWidth; ++i) {
@@ -292,35 +294,26 @@ std::vector<Color> Draw(int index) {
 		}
 		t[i] = pixelColor;
 	}
-	std::cerr << "\nDone.\n";
+	consoleMutex.lock();
+	std::cerr << "Line "  << index << " is done.\n";
+	consoleMutex.unlock();
 	return t;
 }
 
 int main(int argc, char** argv) {
-	/*Point3f lookfrom(13, 2, 3);
-	Point3f lookat(0, 0, 0);*/
-	DWORD start = ::GetTickCount(); //获取毫秒级数目  
+	DWORD start = ::GetTickCount();
 	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
 	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
 	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 	ThreadPool pool(10);
 	std::vector<std::future<std::vector<Color>>> result(imageHeight);
 	for (int j = imageHeight - 1; j >= 0; --j) {
-		//std::cerr << "\rScanlines remaining: " << (double(j) / imageHeight) * 100.0f << std::flush;
-		//std::thread t(Draw, j);
-		//t.detach();
-
-
-		//Draw(j); 12672 33422 12500
-
-
 		result[j] = pool.enqueue(Draw, j);
 	}
 	for (int j = imageHeight - 1; j >= 0; --j) {
 		pixels[j] = result[j].get();
 	}
-	//getchar();
-	std::cerr << ::GetTickCount() - start << std::flush;
+	std::cerr << "Total time: " <<(::GetTickCount() - start)/1000.0f << "s\n" << std::flush;
 	for (int j = imageHeight - 1; j >= 0; --j) {
 		for (int i = 0; i < imageWidth; ++i) {
 			std::cout << pixels[j][i];
