@@ -11,6 +11,7 @@
 #include "core/Texture.hpp"
 #include "core/PDF.hpp"
 #include "core/ThreadPool.h"
+#include "core/Frame.hpp"
 #include <thread>
 #include <Windows.h>
 
@@ -19,13 +20,13 @@ const double aspectRatio = 1.0f;
 const int depth = 50;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
-Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, std::shared_ptr<Shape> lights, int depth){
+Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, std::shared_ptr<Shape> lights, int depth) {
 	IntersectionRecord rec;
 
 	if (depth <= 0)
 		return Color(0, 0, 0);
 
-	if (!world.Intersection(r, 0.001f, Infinity, rec)){
+	if (!world.Intersection(r, 0.001f, Infinity, rec)) {
 		return background;
 	}
 
@@ -295,29 +296,28 @@ std::vector<Color> Draw(int index) {
 		t[i] = pixelColor;
 	}
 	consoleMutex.lock();
-	std::cerr << "Line "  << index << " is done.\n";
+	std::cerr << "Line " << index << " is done.\n";
 	consoleMutex.unlock();
 	return t;
 }
 
 int main(int argc, char** argv) {
-	DWORD start = ::GetTickCount();
 	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
 	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
-	std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
-	ThreadPool pool(10);
-	std::vector<std::future<std::vector<Color>>> result(imageHeight);
-	for (int j = imageHeight - 1; j >= 0; --j) {
-		result[j] = pool.enqueue(Draw, j);
-	}
-	for (int j = imageHeight - 1; j >= 0; --j) {
-		pixels[j] = result[j].get();
-	}
-	std::cerr << "Total time: " <<(::GetTickCount() - start)/1000.0f << "s\n" << std::flush;
-	for (int j = imageHeight - 1; j >= 0; --j) {
-		for (int i = 0; i < imageWidth; ++i) {
-			std::cout << pixels[j][i];
-		}
-	}
+
+	FrameRenderer renderer("CornellBox");
+	auto camera = std::make_shared<Camera>(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
+	auto settings = std::make_shared<FrameSettings>();
+	settings->backgroundColor = Color(0, 0, 0);
+	settings->camera = camera;
+	settings->objects = std::make_shared<ShapesSet>(CornellBox());
+	settings->lights = lights;
+	settings->imageWidth = imageWidth;
+	settings->imageHeight = imageHeight;
+	settings->rayTracingDepth = 50;
+	settings->samplesPerPixel = 100;
+
+	renderer.AddFrame(settings);
+	renderer.Render(Draw, 0, 1);
 	return 0;
 }
