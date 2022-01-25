@@ -1,15 +1,7 @@
 #pragma once
 
-#include "shape/Sphere.hpp"
-#include "shape/Medium.hpp"
-#include "shape/Box.hpp"
-#include "shape/Rectangle.hpp"
-#include "shape/FlipFace.hpp"
 #include "core/World.hpp"
 #include "core/Camera.hpp"
-#include "core/BVH.hpp"
-#include "core/Texture.hpp"
-#include "core/PDF.hpp"
 
 #include <thread>
 #include <Windows.h>
@@ -22,8 +14,24 @@ struct FrameSettings {
 	Color backgroundColor;
 
 	uint16_t imageWidth, imageHeight;
-	Float rayTracingDepth;
-	uint32_t samplesPerPixel;
+	uint32_t rayTracingDepth, samplesPerPixel;
+
+	void SetImageOptions(uint16_t width, uint16_t height) {
+		imageWidth = width;
+		imageHeight = height;
+	}
+
+	void SetScene(std::shared_ptr<Camera> cam, std::shared_ptr<ShapesSet> obj, std::shared_ptr<ShapesSet> lig, const Color& bgColor) {
+		camera = cam;
+		objects = obj;
+		lights = lig;
+		backgroundColor = bgColor;
+	}
+
+	void SetRayTraceOptions(uint32_t depth, uint32_t samples) {
+		rayTracingDepth = depth;
+		samplesPerPixel = samples;
+	}
 };
 /*
 uint16_t imageWidth = 1024;
@@ -62,14 +70,14 @@ public:
 	FrameRenderer(const char* name) : name(name) {}
 
 	void AddFrame(std::shared_ptr<FrameSettings> frame) { frames.emplace_back(frame); }
-	void Render(std::vector<Color>(*Draw)(int), uint32_t startIndex = 0, uint32_t endIndex = 0);
+	void Render(std::vector<Color>(*Draw)(int, std::shared_ptr<FrameSettings>), uint32_t startIndex = 0, uint32_t endIndex = 0);
 
 public:
 	std::string name;
 	std::vector< std::shared_ptr<FrameSettings> > frames;
 };
 
-void FrameRenderer::Render(std::vector<Color>(*Draw)(int), uint32_t startIndex, uint32_t endIndex) {
+void FrameRenderer::Render(std::vector<Color>(*Draw)(int, std::shared_ptr<FrameSettings>), uint32_t startIndex, uint32_t endIndex) {
 	endIndex = endIndex == 0 ? frames.size() : endIndex;
 
 	for (int index = startIndex; index < endIndex; ++index) {
@@ -81,7 +89,7 @@ void FrameRenderer::Render(std::vector<Color>(*Draw)(int), uint32_t startIndex, 
 		std::vector<std::vector<Color>> pixels(frames[index]->imageWidth, std::vector<Color>(frames[index]->imageHeight, Color(0, 0, 0)));
 		std::vector<std::future<std::vector<Color>>> result(frames[index]->imageHeight);
 		for (int j = frames[index]->imageHeight - 1; j >= 0; --j) {
-			result[j] = pool.enqueue(Draw, j);
+			result[j] = pool.enqueue(Draw, j, frames[index]);
 		}
 		for (int j = frames[index]->imageHeight - 1; j >= 0; --j) {
 			pixels[j] = result[j].get();

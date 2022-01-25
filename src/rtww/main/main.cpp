@@ -20,13 +20,13 @@ const double aspectRatio = 1.0f;
 const int depth = 50;
 const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
-Color RayColor(const Ray& r, const Color& background, const ShapesSet& world, std::shared_ptr<Shape> lights, int depth) {
+Color RayColor(const Ray& r, const Color& background, std::shared_ptr <ShapesSet> world, std::shared_ptr<Shape> lights, int depth) {
 	IntersectionRecord rec;
 
 	if (depth <= 0)
 		return Color(0, 0, 0);
 
-	if (!world.Intersection(r, 0.001f, Infinity, rec)) {
+	if (!world->Intersection(r, 0.001f, Infinity, rec)) {
 		return background;
 	}
 
@@ -275,23 +275,17 @@ Point3f lookat = Point3f(278, 278, 0);
 auto vfov = 40.0;
 auto dist2Focus = 10.0f;
 auto aperture = 0.0;
-Camera camera(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
-
-ShapesSet world = CornellBox();
-
-auto lights = std::make_shared<ShapesSet>();
-
 std::mutex consoleMutex;
 
-std::vector<Color> Draw(int index) {
-	std::vector<Color> t(imageHeight, Color(0, 0, 0));
-	for (int i = 0; i < imageWidth; ++i) {
+std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
+	std::vector<Color> t(settings->imageHeight, Color(0, 0, 0));
+	for (int i = 0; i < settings->imageWidth; ++i) {
 		Color pixelColor(0, 0, 0);
-		for (int k = 0; k < samplesPerPixel; ++k) {
-			auto u = Float(i + Random<Float>()) / (imageWidth - 1);
-			auto v = Float(index + Random<Float>()) / (imageHeight - 1);
-			Ray r = camera.GenerateRay(u, v);
-			pixelColor += RayColor(r, background, world, lights, depth);
+		for (int k = 0; k < settings->samplesPerPixel; ++k) {
+			auto u = Float(i + Random<Float>()) / (settings->imageWidth - 1);
+			auto v = Float(index + Random<Float>()) / (settings->imageHeight - 1);
+			Ray r = settings->camera->GenerateRay(u, v);
+			pixelColor += RayColor(r, settings->backgroundColor, settings->objects, settings->lights, settings->rayTracingDepth);
 		}
 		t[i] = pixelColor;
 	}
@@ -302,20 +296,16 @@ std::vector<Color> Draw(int index) {
 }
 
 int main(int argc, char** argv) {
+	auto lights = std::make_shared<ShapesSet>();
 	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
 	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
 
 	FrameRenderer renderer("CornellBox");
-	auto camera = std::make_shared<Camera>(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus);
 	auto settings = std::make_shared<FrameSettings>();
-	settings->backgroundColor = Color(0, 0, 0);
-	settings->camera = camera;
-	settings->objects = std::make_shared<ShapesSet>(CornellBox());
-	settings->lights = lights;
-	settings->imageWidth = imageWidth;
-	settings->imageHeight = imageHeight;
-	settings->rayTracingDepth = 50;
-	settings->samplesPerPixel = 100;
+	settings->SetImageOptions(imageWidth, imageHeight);
+	settings->SetRayTraceOptions(50, 100);
+	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus), 
+		std::make_shared<ShapesSet>(CornellBox()), lights, Color(0, 0, 0));
 
 	renderer.AddFrame(settings);
 	renderer.Render(Draw, 0, 1);
