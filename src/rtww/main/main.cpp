@@ -281,7 +281,7 @@ std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
 	std::vector<Color> t(settings->imageHeight, Color(0, 0, 0));
 	for (int i = 0; i < settings->imageWidth; ++i) {
 		Color pixelColor(0, 0, 0);
-		for (int k = 0; k < settings->samplesPerPixel; ++k) {
+		for (uint32_t k = 0; k < settings->samplesPerPixel; ++k) {
 			auto u = Float(i + Random<Float>()) / (settings->imageWidth - 1);
 			auto v = Float(index + Random<Float>()) / (settings->imageHeight - 1);
 			Ray r = settings->camera->GenerateRay(u, v);
@@ -299,14 +299,18 @@ int main(int argc, char** argv) {
 	auto lights = std::make_shared<ShapesSet>();
 	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
 	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
-
-	FrameRenderer renderer("CornellBox");
+	
+	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/test");
+	if(!fs::exists(imageParentPath)){
+		fs::create_directory(imageParentPath);
+	}
+	FrameRenderer renderer(imageParentPath, 8);
 	auto settings = std::make_shared<FrameSettings>();
 	settings->SetImageOptions(imageWidth, imageHeight);
 	settings->SetRayTraceOptions(50, 100);
 	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus), 
 		std::make_shared<ShapesSet>(CornellBox()), lights, Color(0, 0, 0));
-
+	
 	renderer.AddFrame(settings);
 	renderer.Render(Draw, 0, 1);
 	return 0;
