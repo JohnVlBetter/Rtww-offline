@@ -12,7 +12,7 @@ public:
 };
 
 bool RTWWFile::Write2File(const char* filePath, const char* buffer, int length) {
-	std::ofstream out(filePath,std::ios::app);
+	std::ofstream out(filePath,std::ios::out);
 	if (!out) {
 		std::cerr << "Fail to open " << filePath  << '\n' << std::flush;
 		return false;

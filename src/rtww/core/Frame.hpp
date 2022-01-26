@@ -55,13 +55,16 @@ public:
 	std::vector<std::shared_ptr<FrameSettings>> frames;
 	std::shared_ptr<ThreadPool> pool;
 };
+std::mutex consoleMutex;
 
 void FrameRenderer::Render(std::vector<Color>(*Draw)(int, std::shared_ptr<FrameSettings>), uint32_t startIndex, uint32_t endIndex) {
 	endIndex = endIndex == 0 ? frames.size() : endIndex;
-	pool = std::make_shared<ThreadPool>(threadCount);
 	DWORD totalTime = 0;
 	for (uint32_t index = startIndex; index < endIndex; ++index) {
+		pool = std::make_shared<ThreadPool>(threadCount);
+		consoleMutex.lock();
 		std::cerr << "The frame " << index + 1 << " starts rendering.\n" << std::flush;
+		consoleMutex.unlock();
 		DWORD start = ::GetTickCount();
 		std::stringstream ss;
 
@@ -84,8 +87,9 @@ void FrameRenderer::Render(std::vector<Color>(*Draw)(int, std::shared_ptr<FrameS
 		auto filePath = path / (std::to_string(index) + ".ppm");
 		RTWWFile::Write2File(filePath.string().c_str(), str.c_str(), str.length());
 		auto time = (::GetTickCount() - start) / 1000.0f;
-		totalTime += time;
+		totalTime += time; consoleMutex.lock();
 		std::cerr << "The frame " << index + 1 << " rendering is complete.Total time: " << time << "s\n" << std::flush;
+		consoleMutex.unlock();
 	}
 	std::stringstream timeStr;
 	int hours = std::floor(totalTime / 3600);
@@ -94,5 +98,7 @@ void FrameRenderer::Render(std::vector<Color>(*Draw)(int, std::shared_ptr<FrameS
 	if (hours > 0) timeStr << std::to_string(hours) << "h";
 	if (hours > 0 || minutes > 0) timeStr << std::to_string(minutes) << "m";
 	timeStr << std::to_string(seconds) << "s";
+	consoleMutex.lock();
 	std::cerr << "\nAll rendering is completed, the total time is " << timeStr.str() << "\n" << std::flush;
+	consoleMutex.unlock();
 }

@@ -275,7 +275,6 @@ Point3f lookat = Point3f(278, 278, 0);
 auto vfov = 40.0;
 auto dist2Focus = 10.0f;
 auto aperture = 0.0;
-std::mutex consoleMutex;
 
 std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
 	std::vector<Color> t(settings->imageHeight, Color(0, 0, 0));
@@ -305,13 +304,27 @@ int main(int argc, char** argv) {
 		fs::create_directory(imageParentPath);
 	}
 	FrameRenderer renderer(imageParentPath, 8);
-	auto settings = std::make_shared<FrameSettings>();
-	settings->SetImageOptions(imageWidth, imageHeight);
-	settings->SetRayTraceOptions(50, 100);
-	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus), 
+	auto settings1 = std::make_shared<FrameSettings>();
+	settings1->SetImageOptions(imageWidth, imageHeight);
+	settings1->SetRayTraceOptions(50, 100);
+	settings1->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, aspectRatio, aperture, dist2Focus), 
+		std::make_shared<ShapesSet>(CornellBox()), lights, Color(0, 0, 0));
+
+	auto settings2 = std::make_shared<FrameSettings>();
+	settings2->SetImageOptions(imageWidth, imageHeight);
+	settings2->SetRayTraceOptions(50, 100);
+	settings2->SetScene(std::make_shared<Camera>(lookfrom + Vector3f(0,10,0), lookat, vup, vfov, aspectRatio, aperture, dist2Focus),
+		std::make_shared<ShapesSet>(CornellBox()), lights, Color(0, 0, 0));
+
+	auto settings3 = std::make_shared<FrameSettings>();
+	settings3->SetImageOptions(imageWidth, imageHeight);
+	settings3->SetRayTraceOptions(50, 100);
+	settings3->SetScene(std::make_shared<Camera>(lookfrom + Vector3f(0, 20, 0), lookat, vup, vfov, aspectRatio, aperture, dist2Focus),
 		std::make_shared<ShapesSet>(CornellBox()), lights, Color(0, 0, 0));
 	
-	renderer.AddFrame(settings);
-	renderer.Render(Draw, 0, 1);
+	renderer.AddFrame(settings1);
+	renderer.AddFrame(settings2);
+	renderer.AddFrame(settings3);
+	renderer.Render(Draw, 0, 3);
 	return 0;
 }
