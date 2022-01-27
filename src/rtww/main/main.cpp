@@ -282,11 +282,11 @@ int main(int argc, char** argv) {
 	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
 	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
 	
-	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/test");
+	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/CornellBox");
 	if(!fs::exists(imageParentPath)){
 		fs::create_directory(imageParentPath);
 	}
-	FrameRenderer renderer(imageParentPath, 8);
+	FrameRenderer renderer("CornellBox", imageParentPath, 20, 8);
 
 	Color background(0.00, 0.00, 0.00);
 	Vector3f vup(0, 1, 0);
@@ -296,16 +296,16 @@ int main(int argc, char** argv) {
 	auto dist2Focus = 10.0f;
 	auto aperture = 0.0;
 	
-	for (int i = 0; i < 30; ++i){
+	for (int i = 0; i < 40; ++i){
 		auto settings = std::make_shared<FrameSettings>();
-		settings->SetImageOptions(500, 250);
+		settings->SetImageOptions(200, 200);
 		settings->SetRayTraceOptions(50, 100);
 		settings->SetScene(std::make_shared<Camera>(lookfrom + Vector3f(100 + (-10 * i), -70 + (4.3 * i), 26.8 * i), 
-			lookat + Vector3f(0, -6.7 * i, 10 * i), vup, vfov, 2.0f, aperture, dist2Focus),
+			lookat + Vector3f(0, -6.7 * i, 10 * i), vup, vfov, 1.0f, aperture, dist2Focus),
 			std::make_shared<ShapesSet>(CornellBox()), lights, Color(0, 0, 0));
 		renderer.AddFrame(settings);
 	}
 	
-	renderer.Render(Draw, 14, 15);
+	renderer.Render(Draw, 0, 40);
 	return 0;
 }
