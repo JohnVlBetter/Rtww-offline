@@ -6,7 +6,6 @@
 #include "shape/FlipFace.hpp"
 #include "core/World.hpp"
 #include "core/Camera.hpp"
-//#include "core/Material.hpp"
 #include "core/BVH.hpp"
 #include "core/Texture.hpp"
 #include "core/PDF.hpp"
@@ -14,11 +13,6 @@
 #include "core/Frame.hpp"
 #include <thread>
 #include <Windows.h>
-
-const uint16_t imageWidth = 400;
-const double aspectRatio = 1.0f;
-const int depth = 50;
-const uint16_t imageHeight = static_cast<int>(imageWidth / aspectRatio);
 
 Color RayColor(const Ray& r, const Color& background, std::shared_ptr <ShapesSet> world, std::shared_ptr<Shape> lights, int depth) {
 	IntersectionRecord rec;
@@ -265,19 +259,8 @@ ShapesSet CornellBox2() {
 	return objects;
 }
 
-std::vector<std::vector<Color>> pixels(imageWidth, std::vector<Color>(imageHeight, Color(0, 0, 0)));
-
-
-Color background(0.00, 0.00, 0.00);
-Vector3f vup(0, 1, 0);
-Point3f lookfrom = Point3f(278, 278, -800);
-Point3f lookat = Point3f(278, 278, 0);
-auto vfov = 40.0;
-auto dist2Focus = 10.0f;
-auto aperture = 0.0;
-
 std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
-	std::vector<Color> t(settings->imageHeight, Color(0, 0, 0));
+	std::vector<Color> t(settings->imageWidth, Color(0, 0, 0));
 	for (int i = 0; i < settings->imageWidth; ++i) {
 		Color pixelColor(0, 0, 0);
 		for (uint32_t k = 0; k < settings->samplesPerPixel; ++k) {
@@ -305,17 +288,24 @@ int main(int argc, char** argv) {
 	}
 	FrameRenderer renderer(imageParentPath, 8);
 
-
+	Color background(0.00, 0.00, 0.00);
+	Vector3f vup(0, 1, 0);
+	Point3f lookfrom = Point3f(278, 278, -800);
+	Point3f lookat = Point3f(278, 278, 0);
+	auto vfov = 40.0;
+	auto dist2Focus = 10.0f;
+	auto aperture = 0.0;
+	
 	for (int i = 0; i < 30; ++i){
 		auto settings = std::make_shared<FrameSettings>();
-		settings->SetImageOptions(imageWidth, imageHeight);
+		settings->SetImageOptions(500, 250);
 		settings->SetRayTraceOptions(50, 100);
 		settings->SetScene(std::make_shared<Camera>(lookfrom + Vector3f(100 + (-10 * i), -70 + (4.3 * i), 26.8 * i), 
-			lookat + Vector3f(0, -6.7 * i, 10 * i), vup, vfov, aspectRatio, aperture, dist2Focus),
+			lookat + Vector3f(0, -6.7 * i, 10 * i), vup, vfov, 2.0f, aperture, dist2Focus),
 			std::make_shared<ShapesSet>(CornellBox()), lights, Color(0, 0, 0));
 		renderer.AddFrame(settings);
 	}
-
-	renderer.Render(Draw, 0, 30);
+	
+	renderer.Render(Draw, 14, 15);
 	return 0;
 }

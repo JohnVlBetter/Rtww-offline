@@ -8,6 +8,7 @@
 #include <sstream>
 #include "core/ThreadPool.h"
 #include "core/File.hpp"
+#include "core/Image.hpp"
 
 struct FrameSettings {
 	std::shared_ptr<Camera> camera;
@@ -68,9 +69,7 @@ void FrameRenderer::Render(std::vector<Color>(*Draw)(int, std::shared_ptr<FrameS
 		DWORD start = ::GetTickCount();
 		std::stringstream ss;
 
-		ss << "P3\n" << frames[index]->imageWidth << ' ' << frames[index]->imageHeight << "\n255\n";
-		
-		std::vector<std::vector<Color>> pixels(frames[index]->imageWidth, std::vector<Color>(frames[index]->imageHeight, Color(0, 0, 0)));
+		std::vector<std::vector<Color>> pixels(frames[index]->imageHeight, std::vector<Color>(frames[index]->imageWidth, Color(0, 0, 0)));
 		std::vector<std::future<std::vector<Color>>> result(frames[index]->imageHeight);
 		for (int j = frames[index]->imageHeight - 1; j >= 0; --j) {
 			result[j] = pool->enqueue(Draw, j, frames[index]);
@@ -80,12 +79,14 @@ void FrameRenderer::Render(std::vector<Color>(*Draw)(int, std::shared_ptr<FrameS
 		}
 		for (int j = frames[index]->imageHeight - 1; j >= 0; --j) {
 			for (int i = 0; i < frames[index]->imageWidth; ++i) {
-				ss << pixels[j][i];
+				auto c = ConvertColor(pixels[j][i], frames[index]->samplesPerPixel);
+				ss << (char)c.x << (char)c.y << (char)c.z;
 			}
 		}
 		auto str = ss.str();
-		auto filePath = path / (std::to_string(index) + ".ppm");
-		RTWWFile::Write2File(filePath.string().c_str(), str.c_str(), str.length());
+		auto filePath = path / (std::to_string(index) + ".jpg");
+		Image::Write2JPG(filePath.string().c_str(), str.c_str(), frames[index]->imageWidth, frames[index]->imageHeight, 100);
+		
 		auto time = (::GetTickCount() - start) / 1000.0f;
 		totalTime += time; consoleMutex.lock();
 		std::cerr << "The frame " << index + 1 << " rendering is complete.Total time: " << time << "s\n" << std::flush;

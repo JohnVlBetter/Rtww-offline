@@ -5,15 +5,7 @@
 using namespace hsm;
 #include <vector>
 
-typedef Vector3<Float> Color;
-
-inline Color operator * (const Color& c1, const Color& c2) {
-	return Color(c1.x * c2.x, c1.y * c2.y, c1.z * c2.z);
-}
-
-const int samplesPerPixel = 100;
-
-std::ostream& operator << (std::ostream &o, const Color c) {
+Vector3i ConvertColor(const Color& c, int samples) {
 	auto r = c.x;
 	auto g = c.y;
 	auto b = c.z;
@@ -22,13 +14,11 @@ std::ostream& operator << (std::ostream &o, const Color c) {
 	if (g != g) g = 0.0;
 	if (b != b) b = 0.0;
 
-	auto scale = 1.0f / samplesPerPixel;
+	auto scale = 1.0f / samples;
 	r = sqrt(r * scale);
 	g = sqrt(g * scale);
 	b = sqrt(b * scale);
 
-	o << static_cast<int>(256.0f * Clamp<Float>(r,0.0f,0.999f)) << ' '
-	  << static_cast<int>(256.0f * Clamp<Float>(g,0.0f,0.999f)) << ' '
-	  << static_cast<int>(256.0f * Clamp<Float>(b,0.0f,0.999f)) << std::endl;
-	return o;
+	return Vector3i(static_cast<int>(256.0f * Clamp<Float>(r, 0.0f, 0.999f)),
+		static_cast<int>(256.0f * Clamp<Float>(g, 0.0f, 0.999f)), static_cast<int>(256.0f * Clamp<Float>(b, 0.0f, 0.999f)));
 }
