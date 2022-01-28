@@ -296,16 +296,16 @@ int main(int argc, char** argv) {
 	auto dist2Focus = 10.0f;
 	auto aperture = 0.0;
 	
-	for (int i = 0; i < 40; ++i){
+	for (int i = 0; i < 25; ++i){
 		auto settings = std::make_shared<FrameSettings>();
-		settings->SetImageOptions(200, 200);
-		settings->SetRayTraceOptions(50, 100);
+		settings->SetImageOptions(600, 600);
+		settings->SetRayTraceOptions(50, 1500);
 		settings->SetScene(std::make_shared<Camera>(lookfrom + Vector3f(100 + (-10 * i), -70 + (4.3 * i), 26.8 * i), 
 			lookat + Vector3f(0, -6.7 * i, 10 * i), vup, vfov, 1.0f, aperture, dist2Focus),
-			std::make_shared<ShapesSet>(CornellBox()), lights, Color(0, 0, 0));
+			std::make_shared<ShapesSet>(CornellBox2()), lights, Color(0, 0, 0));
 		renderer.AddFrame(settings);
 	}
 	
-	renderer.Render(Draw, 0, 40);
+	renderer.Render(Draw, 0, 25);
 	return 0;
 }
