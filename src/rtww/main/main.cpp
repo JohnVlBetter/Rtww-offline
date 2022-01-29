@@ -11,6 +11,7 @@
 #include "core/PDF.hpp"
 #include "core/ThreadPool.h"
 #include "core/Frame.hpp"
+#include "core/Transform.hpp"
 #include <thread>
 #include <Windows.h>
 
@@ -254,7 +255,8 @@ ShapesSet CornellBox2() {
 	//objects.Add(std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), white));
 
 	auto glass = std::make_shared<Dielectric>(1.5);
-	objects.Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, glass));
+	auto sphereTransform = rtww::Translate(Vector3f(275, 75, 190));
+	objects.Add(std::make_shared<Sphere>(sphereTransform(Point3f(0, 0, 0)), 75, glass));
 
 	return objects;
 }
@@ -306,6 +308,6 @@ int main(int argc, char** argv) {
 		renderer.AddFrame(settings);
 	}
 	
-	renderer.Render(Draw, 0, 25);
+	renderer.Render(Draw, 0, 1);
 	return 0;
 }
