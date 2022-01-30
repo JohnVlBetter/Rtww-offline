@@ -5,8 +5,12 @@
 class RectangleXY : public Shape {
 public:
 	RectangleXY() {}
-	RectangleXY(Float x0, Float x1, Float y0, Float y1, Float z, std::shared_ptr<Material> mat)
-		:x0(x0), x1(x1), y0(y0), y1(y1), z(z), material(mat) {}
+	RectangleXY(std::shared_ptr<rtww::Transform> object2World, std::shared_ptr<rtww::Transform> world2Object, 
+		Float x0, Float x1, Float y0, Float y1, Float z, std::shared_ptr<Material> mat)
+		:x0(x0), x1(x1), y0(y0), y1(y1), z(z), material(mat) {
+		this->object2World = object2World;
+		this->world2Object = world2Object;
+	}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
 	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const override {
@@ -20,28 +24,33 @@ public:
 };
 
 bool RectangleXY::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
-	auto t = (z - r.origin.z) / r.direction.z;
+	Ray ray = (*world2Object)(r);
+	auto t = (z - ray.origin.z) / ray.direction.z;
 	if (t < tMin || t > tMax)
 		return false;
-	auto x = r.origin.x + t * r.direction.x;
-	auto y = r.origin.y + t * r.direction.y;
+	auto x = ray.origin.x + t * ray.direction.x;
+	auto y = ray.origin.y + t * ray.direction.y;
 	if (x < x0 || x > x1 || y < y0 || y > y1)
 		return false;
 	rec.u = (x - x0) / (x1 - x0);
 	rec.v = (y - y0) / (y1 - y0);
 	rec.time = t;
-	auto outward_Normal = Vector3f(0, 0, 1);
-	rec.SetFaceNormal(r, outward_Normal);
+	auto outwardNormal = (*object2World)(Vector3f(0, 0, 1));
+	rec.SetFaceNormal(ray, outwardNormal);
 	rec.matPtr = material;
-	rec.hitPoint = r.At(t);
+	rec.hitPoint = (*object2World)(ray.At(t));;
 	return true;
 }
 
 class RectangleXZ : public Shape {
 public:
 	RectangleXZ() {}
-	RectangleXZ(Float x0, Float x1, Float z0, Float z1, Float y, std::shared_ptr<Material> mat)
-		:x0(x0), x1(x1), z0(z0), z1(z1), y(y), material(mat) {}
+	RectangleXZ(std::shared_ptr<rtww::Transform> object2World, std::shared_ptr<rtww::Transform> world2Object,
+		Float x0, Float x1, Float z0, Float z1, Float y, std::shared_ptr<Material> mat)
+		:x0(x0), x1(x1), z0(z0), z1(z1), y(y), material(mat) {
+		this->object2World = object2World;
+		this->world2Object = world2Object;
+	}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
 	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const override {
@@ -70,28 +79,33 @@ public:
 };
 
 bool RectangleXZ::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
-	auto t = (y - r.origin.y) / r.direction.y;
+	Ray ray = (*world2Object)(r);
+	auto t = (y - ray.origin.y) / ray.direction.y;
 	if (t < tMin || t > tMax)
 		return false;
-	auto x = r.origin.x + t * r.direction.x;
-	auto z = r.origin.z + t * r.direction.z;
+	auto x = ray.origin.x + t * ray.direction.x;
+	auto z = ray.origin.z + t * ray.direction.z;
 	if (x < x0 || x > x1 || z < z0 || z > z1)
 		return false;
 	rec.u = (x - x0) / (x1 - x0);
 	rec.v = (z - z0) / (z1 - z0);
 	rec.time = t;
-	auto outward_Normal = Vector3f(0, 1, 0);
-	rec.SetFaceNormal(r, outward_Normal);
+	auto outwardNormal = (*object2World)(Vector3f(0, 1, 0));
+	rec.SetFaceNormal(ray, outwardNormal);
 	rec.matPtr = material;
-	rec.hitPoint = r.At(t);
+	rec.hitPoint = (*object2World)(ray.At(t));
 	return true;
 }
 
 class RectangleYZ : public Shape {
 public:
 	RectangleYZ() {}
-	RectangleYZ(Float y0, Float y1, Float z0, Float z1, Float x, std::shared_ptr<Material> mat)
-		:z0(z0), z1(z1), y0(y0), y1(y1), x(x), material(mat) {}
+	RectangleYZ(std::shared_ptr<rtww::Transform> object2World, std::shared_ptr<rtww::Transform> world2Object,
+		Float y0, Float y1, Float z0, Float z1, Float x, std::shared_ptr<Material> mat)
+		:z0(z0), z1(z1), y0(y0), y1(y1), x(x), material(mat) {
+		this->object2World = object2World;
+		this->world2Object = world2Object;
+	}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
 	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const override {
@@ -105,19 +119,20 @@ public:
 };
 
 bool RectangleYZ::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
-	auto t = (x - r.origin.x) / r.direction.x;
+	Ray ray = (*world2Object)(r);
+	auto t = (x - ray.origin.x) / ray.direction.x;
 	if (t < tMin || t > tMax)
 		return false;
-	auto z = r.origin.z + t * r.direction.z;
-	auto y = r.origin.y + t * r.direction.y;
+	auto z = ray.origin.z + t * ray.direction.z;
+	auto y = ray.origin.y + t * ray.direction.y;
 	if (y < y0 || y > y1 || z < z0 || z > z1)
 		return false;
 	rec.u = (y - y0) / (y1 - y0);
 	rec.v = (z - z0) / (z1 - z0);
 	rec.time = t;
-	auto outward_Normal = Vector3f(1, 0, 0);
-	rec.SetFaceNormal(r, outward_Normal);
+	auto outward_Normal = (*object2World)(Vector3f(1, 0, 0));
+	rec.SetFaceNormal(ray, outward_Normal);
 	rec.matPtr = material;
-	rec.hitPoint = r.At(t);
+	rec.hitPoint = (*object2World)(ray.At(t));
 	return true;
 }

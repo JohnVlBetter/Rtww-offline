@@ -117,7 +117,7 @@ ShapesSet SimpleLight() {
 	return objects;
 }
 */
-ShapesSet CornellBox() {
+/*ShapesSet CornellBox() {
 	ShapesSet objects;
 
 	auto red = std::make_shared<Lambertian>(Color(.65, .05, .05));
@@ -143,7 +143,7 @@ ShapesSet CornellBox() {
 	objects.Add(std::make_shared<Sphere>(Point3f(190, 90, 190), 90, glass));
 
 	return objects;
-}
+}*/
 
 /*ShapesSet CornellSmoke() {
 	ShapesSet objects;
@@ -235,28 +235,47 @@ ShapesSet CornellBox2() {
 	auto blue = std::make_shared<Lambertian>(Color(.12, .15, .65));
 	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 15));
 
-	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, 605, blue));
-	objects.Add(std::make_shared<RectangleYZ>(0, 555, 0, 555, -50, red));
-	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, light)));
-	objects.Add(std::make_shared<RectangleXZ>(-50, 605, -200, 555, 0, white));
-	objects.Add(std::make_shared<RectangleXZ>(-50, 605, 0, 555, 555, white));
-	objects.Add(std::make_shared<RectangleXY>(-50, 605, 0, 555, 555, white));
+	auto scale = hsm::Scale(Vector3f(0.5, 0.5, 0.5));
+	auto mvp = scale;
 
+	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
+		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), 0, 555, 0, 555, 605, blue));
+	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
+		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), 0, 555, 0, 555, -50, red));
+	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
+		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), 200, 356, 214, 345, 554, light)));
+	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
+		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), -50, 605, -200, 555, 0, white));
+	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
+		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), -50, 605, 0, 555, 555, white));
+	objects.Add(std::make_shared<RectangleXY>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
+		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), -50, 605, 0, 555, 555, white));
+
+	auto translate = hsm::Translate(Vector3f(0, 0, 275));
+	auto rotate = hsm::RotateY(40);
+	mvp = translate * rotate * scale;
 	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.8, 0.85, 0.88), 0.0);
-	std::shared_ptr<Shape> box1 = std::make_shared<Box>(Point3f(0, 0, 0), Point3f(165, 350, 165), aluminum);
-	box1 = std::make_shared<TRotateY>(box1, 40);
-	box1 = std::make_shared<TTranslate>(box1, Vector3f(0, 0, 275));
+	std::shared_ptr<Shape> box1 = std::make_shared<Box>(std::make_shared<rtww::Transform>(mvp),
+		std::make_shared<rtww::Transform>(mvp.Inverse()), Point3f(0, 0, 0), Point3f(165, 350, 165), aluminum);
+	//box1 = std::make_shared<TRotateY>(box1, 40);
+	//box1 = std::make_shared<TTranslate>(box1, Vector3f(0, 0, 275));
 	objects.Add(box1);
 
-	std::shared_ptr<Shape> box2 = std::make_shared<Box>(Point3f(0, 0, 0), Point3f(165, 280, 165), pink);
-	box2 = std::make_shared<TRotateY>(box2, 50);
-	box2 = std::make_shared<TTranslate>(box2, Vector3f(350, 1.5, 275));
+	translate = hsm::Translate(Vector3f(350, 1.5, 275));
+	rotate = hsm::RotateY(50);
+	mvp = translate * rotate * scale;
+	std::shared_ptr<Shape> box2 = std::make_shared<Box>(std::make_shared<rtww::Transform>(mvp),
+		std::make_shared<rtww::Transform>(mvp.Inverse()), Point3f(0, 0, 0), Point3f(165, 280, 165), pink);
+	//box2 = std::make_shared<TRotateY>(box2, 50);
+	//box2 = std::make_shared<TTranslate>(box2, Vector3f(350, 1.5, 275));
 	objects.Add(box2);
-	//objects.Add(std::make_shared<Box>(Point3f(265, 0, 295), Point3f(430, 330, 460), white));
 
 	auto glass = std::make_shared<Dielectric>(1.5);
-	auto sphereTransform = rtww::Translate(Vector3f(275, 75, 190));
-	objects.Add(std::make_shared<Sphere>(sphereTransform(Point3f(0, 0, 0)), 75, glass));
+	translate = hsm::Translate(Vector3f(275, 75, 190));
+	scale = hsm::Scale(Vector3f(1.0f, 1.0, 1.0f));
+	mvp = translate * scale;
+	objects.Add(std::make_shared<Sphere>(std::make_shared<rtww::Transform>(mvp),
+		std::make_shared<rtww::Transform>(mvp.Inverse()), Point3f(0, 0, 0), 75, glass));
 
 	return objects;
 }
@@ -281,10 +300,12 @@ std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
 
 int main(int argc, char** argv) {
 	auto lights = std::make_shared<ShapesSet>();
-	lights->Add(std::make_shared<RectangleXZ>(200, 356, 214, 345, 554, std::shared_ptr<Material>()));
-	lights->Add(std::make_shared<Sphere>(Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
+	lights->Add(std::make_shared<RectangleXZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
+		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), 200, 356, 214, 345, 554, std::shared_ptr<Material>()));
+	lights->Add(std::make_shared<Sphere>(std::make_shared<rtww::Transform>(rtww::Translate(Vector3f(275, 75, 190))),
+		std::make_shared<rtww::Transform>(rtww::Translate(Vector3f(-275, -75, -190))), Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
 	
-	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/CornellBox");
+	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/CornellBox1");
 	if(!fs::exists(imageParentPath)){
 		fs::create_directory(imageParentPath);
 	}
@@ -301,7 +322,7 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < 25; ++i){
 		auto settings = std::make_shared<FrameSettings>();
 		settings->SetImageOptions(600, 600);
-		settings->SetRayTraceOptions(50, 1500);
+		settings->SetRayTraceOptions(50, 1000);
 		settings->SetScene(std::make_shared<Camera>(lookfrom + Vector3f(100 + (-10 * i), -70 + (4.3 * i), 26.8 * i), 
 			lookat + Vector3f(0, -6.7 * i, 10 * i), vup, vfov, 1.0f, aperture, dist2Focus),
 			std::make_shared<ShapesSet>(CornellBox2()), lights, Color(0, 0, 0));

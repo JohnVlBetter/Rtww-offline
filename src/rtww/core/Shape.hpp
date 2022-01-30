@@ -2,6 +2,7 @@
 
 #include "Core.hpp"
 #include "AABB.hpp"
+#include "Transform.hpp"
 
 class Material;
 
@@ -26,6 +27,8 @@ public:
 	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const = 0;
 	virtual Float PDFValue(const Point3f& o, const Vector3f& v) const { return 0.0; }
 	virtual Vector3f ShapeRandom(const Point3f& o) const { return Vector3f(1, 0, 0); }
+protected:
+	std::shared_ptr<rtww::Transform> object2World,world2Object;
 };
 
 class TTranslate : public Shape {

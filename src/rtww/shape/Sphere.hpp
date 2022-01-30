@@ -1,12 +1,18 @@
 #pragma once
 
 #include "core/Shape.hpp"
+#include "core/Transform.hpp"
 #include "core/OrthonormalBasis.hpp"
 
 class Sphere :public Shape {
 public:
-	Sphere() {}
-	Sphere(Point3f c, Float r, std::shared_ptr<Material> mat) :center(c), radius(r), material(mat) {}
+	Sphere() {
+	}
+	Sphere(std::shared_ptr<rtww::Transform> object2World, std::shared_ptr<rtww::Transform> world2Object, 
+		Point3f c, Float r, std::shared_ptr<Material> mat) :center(c), radius(r), material(mat){
+		this->object2World = object2World;
+		this->world2Object = world2Object;
+	}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
 	virtual bool BoundingBox(Float time0, Float time1, AABB& outputBox) const override;
@@ -51,9 +57,10 @@ Vector3f Sphere::ShapeRandom(const Point3f & o) const{
 }
 
 bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
-	Vector3f o2c = r.origin - center;
-	auto a = r.direction.LengthSquared();
-	auto halfB = Dot(o2c, r.direction);
+	Ray ray = (*world2Object)(r);
+	Vector3f o2c = ray.origin - center;
+	auto a = ray.direction.LengthSquared();
+	auto halfB = Dot(o2c, ray.direction);
 	auto c = o2c.LengthSquared() - radius * radius;
 	auto delta = halfB * halfB - a * c;
 	if (delta < 0) return false;
@@ -67,9 +74,9 @@ bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRec
 	}
 
 	rec.time = root;
-	rec.hitPoint = r.At(root);
-	rec.normal = (rec.hitPoint - center) / radius;
-	rec.SetFaceNormal(r, rec.normal);
+	rec.hitPoint = (*object2World)(ray.At(root));
+	rec.normal = (rec.hitPoint - (*object2World)(center)) / radius;
+	rec.SetFaceNormal(ray, rec.normal);
 	GetUV(Point3f(rec.normal.x, rec.normal.y, rec.normal.z), rec.u, rec.v);
 	rec.matPtr = material;
 
