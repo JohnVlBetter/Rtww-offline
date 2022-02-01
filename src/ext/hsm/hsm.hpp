@@ -669,6 +669,10 @@ typedef Point2<int> Point2i;
 typedef Point3<Float> Point3f;
 typedef Point3<int> Point3i;
 
+inline Vector3f Convert(const Point3f& p) {
+	return Vector3f(p.x, p.y, p.z);
+}
+
 Vector3f RandomInUnitSphere() {
 	while (true) {
 		Vector3f v(Random<Float>(-1.0f, 1.0f), Random<Float>(-1.0f, 1.0f), Random<Float>(-1.0f, 1.0f));
