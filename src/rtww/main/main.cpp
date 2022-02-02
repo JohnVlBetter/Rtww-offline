@@ -238,18 +238,24 @@ ShapesSet CornellBox2() {
 	auto scale = hsm::Scale(Vector3f(1.0, 1.0, 1.0));
 	auto mvp = scale;
 
-	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
-		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), 0, 555, 0, 555, 605, blue));
-	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
-		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), 0, 555, 0, 555, -50, red));
+	mvp = hsm::Translate(Vector3f(605, 277.5, 277.5)) * hsm::Scale(Vector3f(1.0, 555, 555));
+	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<rtww::Transform>(mvp),
+		std::make_shared<rtww::Transform>(mvp.Inverse())/*, 0, 555, 0, 555, 605*/, blue));
+
+	mvp = hsm::Translate(Vector3f(-50, 277.5, 277.5)) * hsm::Scale(Vector3f(1.0, 555, 555));
+	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<rtww::Transform>(mvp),
+		std::make_shared<rtww::Transform>(mvp.Inverse())/*, 0, 555, 0, 555, -50*/, red));
+
 	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
 		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), 200, 356, 214, 345, 554, light)));
 	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
 		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), -50, 605, -200, 555, 0, white));
 	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
 		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), -50, 605, 0, 555, 555, white));
-	objects.Add(std::make_shared<RectangleXY>(std::make_shared<rtww::Transform>(hsm::Matrix4x4()),
-		std::make_shared<rtww::Transform>(hsm::Matrix4x4()), -50, 605, 0, 555, 555, white));
+
+	mvp = hsm::Translate(Vector3f(277.5, 277.5, 555)) * hsm::Scale(Vector3f(655, 555, 1.0));
+	objects.Add(std::make_shared<RectangleXY>(std::make_shared<rtww::Transform>(mvp),
+		std::make_shared<rtww::Transform>(mvp.Inverse()), white));
 
 	auto translate = hsm::Translate(Vector3f(0, 45, 275));
 	auto rotate = hsm::RotateY(40);
@@ -308,7 +314,7 @@ int main(int argc, char** argv) {
 
 	Color background(0.00, 0.00, 0.00);
 	Vector3f vup(0, 1, 0);
-	Point3f lookfrom = Point3f(278, 278, -800);
+	Point3f lookfrom = Point3f(278, 278, -1500);
 	Point3f lookat = Point3f(278, 278, 0);
 	auto vfov = 40.0;
 	auto dist2Focus = 10.0f;

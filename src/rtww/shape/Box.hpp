@@ -25,14 +25,14 @@ Box::Box(std::shared_ptr<rtww::Transform> object2World, std::shared_ptr<rtww::Tr
 	pMin = p0;
 	pmax = p1;
 
-	sides.Add(std::make_shared<RectangleXY>(object2World, world2Object, p0.x, p1.x, p0.y, p1.y, p1.z, mat));
-	sides.Add(std::make_shared<RectangleXY>(object2World, world2Object, p0.x, p1.x, p0.y, p1.y, p0.z, mat));
+	//sides.Add(std::make_shared<RectangleXY>(object2World, world2Object, p0.x, p1.x, p0.y, p1.y, p1.z, mat));
+	//sides.Add(std::make_shared<RectangleXY>(object2World, world2Object, p0.x, p1.x, p0.y, p1.y, p0.z, mat));
 
 	sides.Add(std::make_shared<RectangleXZ>(object2World, world2Object, p0.x, p1.x, p0.z, p1.z, p1.y, mat));
 	sides.Add(std::make_shared<RectangleXZ>(object2World, world2Object, p0.x, p1.x, p0.z, p1.z, p0.y, mat));
-
-	sides.Add(std::make_shared<RectangleYZ>(object2World, world2Object, p0.y, p1.y, p0.z, p1.z, p1.x, mat));
-	sides.Add(std::make_shared<RectangleYZ>(object2World, world2Object, p0.y, p1.y, p0.z, p1.z, p0.x, mat));
+	
+	//sides.Add(std::make_shared<RectangleYZ>(object2World, world2Object, p0.y, p1.y, p0.z, p1.z, p1.x, mat));
+	//sides.Add(std::make_shared<RectangleYZ>(object2World, world2Object, p0.y, p1.y, p0.z, p1.z, p0.x, mat));
 }
 
 bool Box::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
