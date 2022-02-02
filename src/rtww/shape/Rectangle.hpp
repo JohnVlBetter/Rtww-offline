@@ -47,10 +47,17 @@ class RectangleXZ : public Shape {
 public:
 	RectangleXZ() {}
 	RectangleXZ(std::shared_ptr<rtww::Transform> object2World, std::shared_ptr<rtww::Transform> world2Object,
-		Float x0, Float x1, Float z0, Float z1, Float y, std::shared_ptr<Material> mat)
-		:x0(x0), x1(x1), z0(z0), z1(z1), y(y), material(mat) {
+		std::shared_ptr<Material> mat) : material(mat) {
 		this->object2World = object2World;
 		this->world2Object = world2Object;
+		auto center = Point3f(object2World->GetMatrix().data[0][3], object2World->GetMatrix().data[1][3], object2World->GetMatrix().data[2][3]);
+		auto xl = object2World->GetMatrix().data[0][0] * 0.5f;
+		auto zl = object2World->GetMatrix().data[2][2] * 0.5f;
+		this->x0 = center.x - xl;
+		this->x1 = center.x + xl;
+		this->z0 = center.z - zl;
+		this->z1 = center.z + zl;
+		this->y = center.y;
 	}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
@@ -75,21 +82,23 @@ public:
 	}
 
 public:
-	Float x0, x1, z0, z1, y;
 	std::shared_ptr<Material> material;
+
+private:
+	Float x0, x1, z0, z1, y;
 };
 
 bool RectangleXZ::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
 	Ray ray = (*world2Object)(r);
-	auto t = (y - ray.origin.y) / ray.direction.y;
+	auto t = -ray.origin.y / ray.direction.y;
 	if (t < tMin || t > tMax)
 		return false;
 	auto x = ray.origin.x + t * ray.direction.x;
 	auto z = ray.origin.z + t * ray.direction.z;
-	if (x < x0 || x > x1 || z < z0 || z > z1)
+	if (x < -0.5f || x > 0.5f || z < -0.5f || z > 0.5f)
 		return false;
-	rec.u = (x - x0) / (x1 - x0);
-	rec.v = (z - z0) / (z1 - z0);
+	rec.u = x + 0.5f;
+	rec.v = z + 0.5f;
 	rec.time = t;
 	auto outwardNormal = (*object2World)(Vector3f(0, 1, 0));
 	rec.SetFaceNormal(ray, outwardNormal);
