@@ -872,6 +872,30 @@ typedef Bounds2<Float> Bounds2f;
 typedef Bounds3<int> Bounds3i;
 typedef Bounds3<Float> Bounds3f;
 
+//Ray
+class Ray {
+public:
+	//public methods
+	Ray() {}
+	Ray(const Point3f& o, const Vector3f& d, Float t = 0.0f) : origin(o), direction(d), time(t) {}
+
+	Point3f At(Float t) const { return origin + t * direction; }
+
+	bool HasNaN() const {
+		return (origin.HasNaN() || direction.HasNaN());
+	}
+
+	//public data
+	Point3f origin;
+	Vector3f direction;
+	Float time;
+};
+
+inline std::ostream &operator<<(std::ostream &o, const Ray &r) {
+	o << "[ origin:" << r.origin << ", direction:" << r.direction << ", time:" << r.time << "]";
+	return o;
+}
+
 //Matrix 4x4
 class Matrix4x4 {
 public:
@@ -930,6 +954,12 @@ public:
 				result.data[i][j] = data[i][0] * mat.data[0][j] + data[i][1] * mat.data[1][j] +
 					                data[i][2] * mat.data[2][j] + data[i][3] * mat.data[3][j];
 		return result;
+	}
+
+	bool HasScale() const {
+#define NOT_ONE(x) ((x) < .999f || (x) > 1.001f)
+		return (NOT_ONE(data[0][0]) || NOT_ONE(data[1][1]) || NOT_ONE(data[2][2]));
+#undef NOT_ONE
 	}
 
 	Matrix4x4 Transpose() const {
@@ -1005,6 +1035,12 @@ public:
 				data[2][0] == 0.f && data[2][1] == 0.f && data[2][2] == 1.f && data[2][3] == 0.f &&
 				data[3][0] == 0.f && data[3][1] == 0.f && data[3][2] == 0.f && data[3][3] == 1.f);
 	}
+
+	template <typename T>
+	inline Point3<T> operator()(const Point3<T> &p) const;
+	template <typename T>
+	inline Vector3<T> operator()(const Vector3<T> &v) const;
+	inline Ray operator()(const Ray &r) const;
 
 	//public data
 	Float data[4][4];
@@ -1087,6 +1123,32 @@ Matrix4x4 GetPerspectiveMatrix(Float aspect, Float fov, Float near, Float far) {
 	Float tanHalfFov = std::tan(Radians(fov) * 0.5f);
 	return Matrix4x4(1 / (aspect * tanHalfFov), 0.0f, 0.0f, 0.0f, 0.0f, 1 / tanHalfFov, 0.0f, 0.0f,
 		             0.0f, 0.0f, (near + far) / (far - near), 1.0f, 0.0f, 0.0f, (2 * far * near)/(near - far), 0.0f);
+}
+
+template <typename T>
+inline Point3<T> Matrix4x4::operator()(const Point3<T> &p) const {
+	T x = p.x, y = p.y, z = p.z;
+	T px = data[0][0] * x + data[0][1] * y + data[0][2] * z + data[0][3];
+	T py = data[1][0] * x + data[1][1] * y + data[1][2] * z + data[1][3];
+	T pz = data[2][0] * x + data[2][1] * y + data[2][2] * z + data[2][3];
+	T pw = data[3][0] * x + data[3][1] * y + data[3][2] * z + data[3][3];
+	assert(pw != 0);
+	if (pw == 1) return Point3<T>(px, py, pz);
+	else return Point3<T>(px, py, pz) / pw;
+}
+
+template <typename T>
+inline Vector3<T> Matrix4x4::operator()(const Vector3<T> &v) const {
+	T x = v.x, y = v.y, z = v.z;
+	return Vector3<T>(data[0][0] * x + data[0][1] * y + data[0][2] * z,
+					  data[1][0] * x + data[1][1] * y + data[1][2] * z,
+					  data[2][0] * x + data[2][1] * y + data[2][2] * z);
+}
+
+inline Ray Matrix4x4::operator()(const Ray &r) const {
+	Point3f o = (*this)(r.origin);
+	Vector3f d = (*this)(r.direction);
+	return Ray(o, d, r.time);
 }
 
 //Quaternion
@@ -1195,6 +1257,14 @@ public:
 	Float w, x, y, z;
 };
 
+Quaternion CreateQuaternionByVec3(const Vector3f& rotation) {
+	auto rotMat = Matrix4x4();
+	if (rotation.x != 0)rotMat = rotMat * RotateX(rotation.x);
+	if (rotation.y != 0)rotMat = rotMat * RotateY(rotation.y);
+	if (rotation.z != 0)rotMat = rotMat * RotateZ(rotation.z);
+	return Quaternion(rotMat);
+}
+
 inline Quaternion operator * (Float n, const Quaternion &q) { 
 	return q * n; 
 }
@@ -1220,29 +1290,4 @@ Quaternion Slerp(Float n, const Quaternion& q1, const Quaternion& q2) {
 		return q1 * std::cos(thetaN) + q3 * std::sin(thetaN);
 	}
 }
-
-//Ray
-class Ray {
-public:
-	//public methods
-	Ray(){}
-	Ray(const Point3f& o, const Vector3f& d, Float t = 0.0f) : origin(o), direction(d), time(t) {}
-
-	Point3f At(Float t) const { return origin + t * direction; }
-
-	bool HasNaN() const {
-		return (origin.HasNaN() || direction.HasNaN());
-	}
-
-	//public data
-	Point3f origin;
-	Vector3f direction;
-	Float time;
-};
-
-inline std::ostream &operator<<(std::ostream &o, const Ray &r) {
-	o << "[ origin:" << r.origin << ", direction:" << r.direction << ", time:" << r.time << "]";
-	return o;
-}
-
 }

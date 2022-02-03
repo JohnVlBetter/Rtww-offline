@@ -28,5 +28,5 @@ public:
 	virtual Float PDFValue(const Point3f& o, const Vector3f& v) const { return 0.0; }
 	virtual Vector3f ShapeRandom(const Point3f& o) const { return Vector3f(1, 0, 0); }
 protected:
-	std::shared_ptr<rtww::Transform> object2World,world2Object;
+	std::shared_ptr<Transform> transform;
 };

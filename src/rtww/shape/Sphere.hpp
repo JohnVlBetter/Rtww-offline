@@ -8,10 +8,8 @@ class Sphere :public Shape {
 public:
 	Sphere() {
 	}
-	Sphere(std::shared_ptr<rtww::Transform> object2World, std::shared_ptr<rtww::Transform> world2Object,
-		std::shared_ptr<Material> mat) : material(mat){
-		this->object2World = object2World;
-		this->world2Object = world2Object;
+	Sphere(std::shared_ptr<Transform> transform, std::shared_ptr<Material> mat) : material(mat){
+		this->transform = transform;
 	}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
@@ -32,14 +30,13 @@ public:
 	std::shared_ptr<Material> material;
 };
 
-std::shared_ptr<Sphere> CreateSphere(const Matrix4x4& o2w, std::shared_ptr<Material> mat) {
-	auto w2o = o2w.Inverse();
-	return std::make_shared<Sphere>(std::make_shared<rtww::Transform>(o2w, w2o), std::make_shared<rtww::Transform>(w2o, o2w), mat);
+std::shared_ptr<Sphere> CreateSphere(const Point3f& position, const Vector3f& scale, const Vector3f& rotation, std::shared_ptr<Material> mat) {
+	return std::make_shared<Sphere>(std::make_shared<Transform>(position, scale, rotation), mat);
 }
 
 bool Sphere::BoundingBox(Float time0, Float time1, AABB& outputBox) const {
-	auto center = Point3f(object2World->GetMatrix().data[0][3], object2World->GetMatrix().data[1][3], object2World->GetMatrix().data[2][3]);
-	auto radius = object2World->GetMatrix().data[0][0];
+	auto center = transform->GetPosition();
+	auto radius = transform->GetScale()[0];
 	outputBox = AABB(center - Vector3f(radius, radius, radius), center + Vector3f(radius, radius, radius));
 	return true;
 }
@@ -48,16 +45,16 @@ Float Sphere::PDFValue(const Point3f & o, const Vector3f & v) const{
 	IntersectionRecord rec;
 	if (!Intersection(Ray(o, v), 0.001, Infinity, rec))
 		return 0;
-	auto center = Point3f(object2World->GetMatrix().data[0][3], object2World->GetMatrix().data[1][3], object2World->GetMatrix().data[2][3]);
-	auto radius = object2World->GetMatrix().data[0][0];
+	auto center = transform->GetPosition();
+	auto radius = transform->GetScale()[0];
 	auto cosThetaMax = sqrt(1 - radius * radius / (center - o).LengthSquared());
 	auto solidAngle = 2 * Pi*(1 - cosThetaMax);
 	return 1 / solidAngle;
 }
 
 Vector3f Sphere::ShapeRandom(const Point3f & o) const{
-	auto center = Point3f(object2World->GetMatrix().data[0][3], object2World->GetMatrix().data[1][3], object2World->GetMatrix().data[2][3]);
-	auto radius = object2World->GetMatrix().data[0][0];
+	auto center = transform->GetPosition();
+	auto radius = transform->GetScale()[0];
 	Vector3f dir = center - o;
 	auto distanceSquared = dir.LengthSquared();
 	OrthonormalBasis onb;
@@ -66,7 +63,7 @@ Vector3f Sphere::ShapeRandom(const Point3f & o) const{
 }
 
 bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
-	Ray ray = (*world2Object)(r);
+	Ray ray = transform->GetWorld2ObjectMatrix()(r);
 	Vector3f o2c = Convert(ray.origin);
 	auto a = ray.direction.LengthSquared();
 	auto halfB = Dot(o2c, ray.direction);
@@ -83,8 +80,8 @@ bool Sphere::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRec
 	}
 
 	rec.time = root;
-	rec.hitPoint = (*object2World)(ray.At(root));
-	rec.normal = (rec.hitPoint - (*object2World)(Point3f()));
+	rec.hitPoint = transform->GetObject2WorldMatrix()(ray.At(root));
+	rec.normal = (rec.hitPoint - transform->GetObject2WorldMatrix()(Point3f()));
 	rec.SetFaceNormal(ray, rec.normal);
 	GetUV(Point3f(rec.normal.x, rec.normal.y, rec.normal.z), rec.u, rec.v);
 	rec.matPtr = material;
