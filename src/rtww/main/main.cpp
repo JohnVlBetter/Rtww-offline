@@ -22,6 +22,8 @@ Color RayColor(const Ray& r, const Color& background, std::shared_ptr <ShapesSet
 		return Color(0, 0, 0);
 
 	if (!world->Intersection(r, 0.001f, Infinity, rec)) {
+		//auto t = 0.5*(r.direction.Normalize().y + 1.0);
+		//return (1.0 - t)* Color(1.0, 1.0, 1.0) + t *  Color(0.5, 0.7, 1.0);
 		return background;
 	}
 
@@ -268,6 +270,58 @@ ShapesSet CornellBox2() {
 	return objects;
 }
 
+ShapesSet Geometry() {
+	ShapesSet objects;
+
+	auto green = std::make_shared<Lambertian>(Color(0.6484375, 0.79, 0.6328125));
+	auto whiteG = std::make_shared<Lambertian>(Color(.73, .83, .73));
+	auto black = std::make_shared<Lambertian>(Color(0.02, 0.02, 0.02));
+	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 8));
+
+	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(
+		Point3f(-50, 277.5, 277.5), Vector3f(1, 655, 800), Vector3f()), green));
+
+	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+		Point3f(400, 700, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), light)));
+
+	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+		Point3f(277.5, 0, 177.5), Vector3f(655, 1, 755), Vector3f()), green));
+
+	objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
+		Point3f(277.5, 277.5, 555), Vector3f(655, 655, 1), Vector3f()), green));
+
+	std::shared_ptr<Shape> box1 = std::make_shared<Box>(std::make_shared<Transform>(
+		Point3f(250, 10, 250), Vector3f(300, 20, 20), Vector3f(0, 0, 0)), whiteG);
+	objects.Add(box1);
+
+	std::shared_ptr<Shape> box2 = std::make_shared<Box>(std::make_shared<Transform>(
+		Point3f(390, 135, 250), Vector3f(20, 300, 20), Vector3f(0, 0, 0)), whiteG);
+	objects.Add(box2);
+
+	std::shared_ptr<Shape> box3 = std::make_shared<Box>(std::make_shared<Transform>(
+		Point3f(110, 135, 250), Vector3f(20, 300, 20), Vector3f(0, 0, 0)), whiteG);
+	objects.Add(box3);
+
+	std::shared_ptr<Shape> box4 = std::make_shared<Box>(std::make_shared<Transform>(
+		Point3f(250, 290, 250), Vector3f(300, 20, 20), Vector3f(0, 0, 0)), whiteG);
+	objects.Add(box4);
+
+	std::shared_ptr<Shape> line1 = std::make_shared<Box>(std::make_shared<Transform>(
+		Point3f(305, 220, 250), Vector3f(1, 160, 1), Vector3f(0, 0, 0)), black);
+	objects.Add(line1);
+
+	std::shared_ptr<Shape> line2 = std::make_shared<Box>(std::make_shared<Transform>(
+		Point3f(195, 220, 250), Vector3f(1, 160, 1), Vector3f(0, 0, 0)), black);
+	objects.Add(line2);
+
+	auto glass = std::make_shared<Dielectric>(1.5);
+	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.5, 0.5, 0.6), 0.0);
+	objects.Add(CreateSphere(Point3f(195, 120, 250), Vector3f(40, 40, 40), Vector3f(), aluminum));
+	objects.Add(CreateSphere(Point3f(305, 120, 250), Vector3f(40, 40, 40), Vector3f(), glass));
+	
+	return objects;
+}
+
 std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
 	std::vector<Color> t(settings->imageWidth, Color(0, 0, 0));
 	for (int i = 0; i < settings->imageWidth; ++i) {
@@ -287,36 +341,63 @@ std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
 }
 
 int main(int argc, char** argv) {
+	//auto lights = std::make_shared<ShapesSet>();
+	//lights->Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+	//	Point3f(278, 554, 279.5), Vector3f(156, 1.0, 131), Vector3f()), std::shared_ptr<Material>()));
+	////lights->Add(std::make_shared<Sphere>(std::make_shared<rtww::Transform>(rtww::Translate(Vector3f(275, 75, 190))),
+	////	std::make_shared<rtww::Transform>(rtww::Translate(Vector3f(-275, -75, -190))), Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
+	//
+	//fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/CornellBox1");
+	//if(!fs::exists(imageParentPath)){
+	//	fs::create_directory(imageParentPath);
+	//}
+	//FrameRenderer renderer("CornellBox", imageParentPath, 20, 8);
+	//
+	//Color background(0.00, 0.00, 0.00);
+	//Vector3f vup(0, 1, 0);
+	//Point3f lookfrom = Point3f(278, 278, -1500);
+	//Point3f lookat = Point3f(278, 278, 0);
+	//auto vfov = 40.0;
+	//auto dist2Focus = 10.0f;
+	//auto aperture = 0.0;
+	//
+	//for (int i = 0; i < 25; ++i){
+	//	auto settings = std::make_shared<FrameSettings>();
+	//	settings->SetImageOptions(1024, 1024);
+	//	settings->SetRayTraceOptions(50, 1500);
+	//	settings->SetScene(std::make_shared<Camera>(lookfrom + Vector3f(100 + (-10 * i), -70 + (4.3 * i), 26.8 * i), 
+	//		lookat + Vector3f(0, -6.7 * i, 10 * i), vup, vfov, 1.0f, aperture, dist2Focus),
+	//		std::make_shared<ShapesSet>(CornellBox2()), lights, Color(0, 0, 0));
+	//	renderer.AddFrame(settings);
+	//}
+	//
+	//renderer.Render(Draw, 0, 1);
+
 	auto lights = std::make_shared<ShapesSet>();
 	lights->Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(278, 554, 279.5), Vector3f(156, 1.0, 131), Vector3f()), std::shared_ptr<Material>()));
-	//lights->Add(std::make_shared<Sphere>(std::make_shared<rtww::Transform>(rtww::Translate(Vector3f(275, 75, 190))),
-	//	std::make_shared<rtww::Transform>(rtww::Translate(Vector3f(-275, -75, -190))), Point3f(275, 75, 190), 75, std::shared_ptr<Material>()));
-	
-	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/CornellBox1");
-	if(!fs::exists(imageParentPath)){
+		Point3f(400, 700, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
+	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/Geometry");
+	if (!fs::exists(imageParentPath)) {
 		fs::create_directory(imageParentPath);
 	}
-	FrameRenderer renderer("CornellBox", imageParentPath, 20, 8);
+	FrameRenderer renderer("Geometry", imageParentPath, 20, 8);
 
-	Color background(0.00, 0.00, 0.00);
+	Color background(0, 0, 0);
 	Vector3f vup(0, 1, 0);
-	Point3f lookfrom = Point3f(278, 278, -1500);
-	Point3f lookat = Point3f(278, 278, 0);
+	Point3f lookfrom = Point3f(270, 250, -550);
+	Point3f lookat = Point3f(200, 200, 400);
 	auto vfov = 40.0;
 	auto dist2Focus = 10.0f;
 	auto aperture = 0.0;
-	
-	for (int i = 0; i < 25; ++i){
-		auto settings = std::make_shared<FrameSettings>();
-		settings->SetImageOptions(400, 400);
-		settings->SetRayTraceOptions(50, 200);
-		settings->SetScene(std::make_shared<Camera>(lookfrom + Vector3f(100 + (-10 * i), -70 + (4.3 * i), 26.8 * i), 
-			lookat + Vector3f(0, -6.7 * i, 10 * i), vup, vfov, 1.0f, aperture, dist2Focus),
-			std::make_shared<ShapesSet>(CornellBox2()), lights, Color(0, 0, 0));
-		renderer.AddFrame(settings);
-	}
-	
+
+	auto settings = std::make_shared<FrameSettings>();
+	settings->SetImageOptions(1024, 1024);
+	settings->SetRayTraceOptions(50, 1500);
+	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
+		std::make_shared<ShapesSet>(Geometry()), lights, background);
+	renderer.AddFrame(settings);
+
 	renderer.Render(Draw, 0, 1);
+
 	return 0;
 }

@@ -25,14 +25,14 @@ public:
 Box::Box(std::shared_ptr<Transform> transform, std::shared_ptr<Material> mat) {
 	this->transform = transform;
 	
-	sides.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(Point3f(0, 0, 0.5), Vector3f(1.0f, 1.0f, 0.004f), Vector3f()), mat));
-	sides.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(Point3f(0, 0, -0.5), Vector3f(1.0f, 1.0f, 0.004f), Vector3f()), mat));
+	sides.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(Point3f(0, 0, 0.5), Vector3f(1.0f, 1.0f, 0.03f), Vector3f()), mat));
+	sides.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(Point3f(0, 0, -0.5), Vector3f(1.0f, 1.0f, 0.03f), Vector3f()), mat));
 																							 	
-	sides.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(Point3f(0, 0.5, 0), Vector3f(1.0f, 0.004f, 1.0f), Vector3f()), mat));
-	sides.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(Point3f(0, -0.5, 0), Vector3f(1.0f, 0.004f, 1.0f), Vector3f()), mat));
+	sides.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(Point3f(0, 0.5, 0), Vector3f(1.0f, 0.03f, 1.0f), Vector3f()), mat));
+	sides.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(Point3f(0, -0.5, 0), Vector3f(1.0f, 0.03f, 1.0f), Vector3f()), mat));
 																		
-	sides.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(Point3f(0.5, 0, 0), Vector3f(0.004f, 1.0f, 1.0f), Vector3f()), mat));
-	sides.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(Point3f(-0.5, 0, 0), Vector3f(0.004f, 1.0f, 1.0f), Vector3f()), mat));
+	sides.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(Point3f(0.5, 0, 0), Vector3f(0.03f, 1.0f, 1.0f), Vector3f()), mat));
+	sides.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(Point3f(-0.5, 0, 0), Vector3f(0.03f, 1.0f, 1.0f), Vector3f()), mat));
 }
 
 bool Box::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
