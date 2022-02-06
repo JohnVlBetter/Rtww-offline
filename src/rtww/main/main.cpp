@@ -12,6 +12,7 @@
 #include "core/ThreadPool.h"
 #include "core/Frame.hpp"
 #include "core/Transform.hpp"
+#include "core/Model.hpp"
 #include <thread>
 #include <Windows.h>
 
@@ -397,7 +398,9 @@ int main(int argc, char** argv) {
 		std::make_shared<ShapesSet>(Geometry()), lights, background);
 	renderer.AddFrame(settings);
 
-	renderer.Render(Draw, 0, 1);
-
+	//renderer.Render(Draw, 0, 1);
+	Model model;
+	model.Load("D:/Workspace/CG/Repos/Rtww-offline/resources/models/cornell_box.obj");
+	system("pause");
 	return 0;
 }

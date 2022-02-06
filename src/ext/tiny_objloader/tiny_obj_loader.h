@@ -638,7 +638,6 @@ void LoadMtl(std::map<std::string, int> *material_map,
 /// @param[out] texname Parsed texture name
 /// @param[out] texopt Parsed texopt
 /// @param[in] linebuf Input string
-///
 bool ParseTextureNameAndOption(std::string *texname, texture_option_t *texopt,
                                const char *linebuf);
 
