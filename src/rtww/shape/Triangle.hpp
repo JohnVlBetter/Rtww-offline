@@ -48,7 +48,9 @@ bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionR
 	bool result = IntersectTriangle(o, r.direction, p1, p2, p3, &t, &u, &v);
 	rec.time = t;
 	rec.hitPoint = r.At(t);
-	rec.normal = Vector3f(0, 0, -1);
+	Vector3 E1 = p2 - p1;
+	Vector3 E2 = p3 - p1;
+	rec.normal = Vector3f(0,0,-1);
 	rec.matPtr = material;
 	rec.SetFaceNormal(r, rec.normal);
 	rec.u = u;

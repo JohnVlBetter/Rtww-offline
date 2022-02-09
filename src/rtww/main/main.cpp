@@ -320,7 +320,9 @@ ShapesSet Geometry() {
 	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.5, 0.5, 0.6), 0.0);
 	objects.Add(CreateSphere(Point3f(195, 120, 250), Vector3f(40, 40, 40), Vector3f(), aluminum));
 	objects.Add(CreateSphere(Point3f(305, 120, 250), Vector3f(40, 40, 40), Vector3f(), glass));
-	objects.Add(std::make_shared<Triangle>(Vector3f(195, 120, 250), Vector3f(500, 120, 250), Vector3f(380, 500, 250), black));
+	objects.Add(std::make_shared<Triangle>(Vector3f(195, 120, -100), Vector3f(500, 120, -100), Vector3f(380, 500, 0), green));
+	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+		Point3f(380, 120, 250), Vector3f(156, 1, 131), Vector3f()),green));
 	
 	return objects;
 }
@@ -332,11 +334,9 @@ ShapesSet Triangles() {
 	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 15));
 
 	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(278, 554, 279.5), Vector3f(156, 1, 131), Vector3f()), light)));
-
+		Point3f(0, 554, -100), Vector3f(156, 1, 131), Vector3f()), light)));
+	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.5, 0.5, 0.6), 0.0);
 	objects.Add(std::make_shared<Triangle>(Vector3f(-50, -50, 0), Vector3f(-50, 60, 0), Vector3f(100, 0, 0), red));
-	auto glass = std::make_shared<Dielectric>(1.5);
-	objects.Add(CreateSphere(Point3f(0, 0, 0), Vector3f(50, 50, 50), Vector3f(), glass));
 
 	return objects;
 }
@@ -400,45 +400,45 @@ int main(int argc, char** argv) {
 	//
 	//renderer.Render(Draw, 0, 1);
 
-	auto lights = std::make_shared<ShapesSet>();
-	lights->Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(400, 700, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
-	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/Geometry");
-	if (!fs::exists(imageParentPath)) {
-		fs::create_directory(imageParentPath);
-	}
-	FrameRenderer renderer("Geometry", imageParentPath, 20, 8);
-	
-	Color background(0, 0, 0);
-	Vector3f vup(0, 1, 0);
-	Point3f lookfrom = Point3f(270, 250, -550);
-	Point3f lookat = Point3f(200, 200, 400);
-	auto vfov = 40.0;
-	auto dist2Focus = 10.0f;
-	auto aperture = 0.0;
-	
-	auto settings = std::make_shared<FrameSettings>();
-	settings->SetImageOptions(400, 400);
-	settings->SetRayTraceOptions(50, 100);
-	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
-		std::make_shared<ShapesSet>(Geometry()), lights, background);
-	renderer.AddFrame(settings);
-	
-	renderer.Render(Draw, 0, 1);
+	//auto lights = std::make_shared<ShapesSet>();
+	//lights->Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+	//	Point3f(400, 700, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
+	//fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/Geometry");
+	//if (!fs::exists(imageParentPath)) {
+	//	fs::create_directory(imageParentPath);
+	//}
+	//FrameRenderer renderer("Geometry", imageParentPath, 20, 8);
+	//
+	//Color background(0, 0, 0);
+	//Vector3f vup(0, 1, 0);
+	//Point3f lookfrom = Point3f(270, 250, -550);
+	//Point3f lookat = Point3f(200, 200, 400);
+	//auto vfov = 40.0;
+	//auto dist2Focus = 10.0f;
+	//auto aperture = 0.0;
+	//
+	//auto settings = std::make_shared<FrameSettings>();
+	//settings->SetImageOptions(400, 400);
+	//settings->SetRayTraceOptions(50, 100);
+	//settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
+	//	std::make_shared<ShapesSet>(Geometry()), lights, background);
+	//renderer.AddFrame(settings);
+	//
+	//renderer.Render(Draw, 0, 1);
 	//Model model;
 	//model.Load("D:/Workspace/CG/Repos/Rtww-offline/resources/models/cornell_box.obj");
 	//system("pause");
 
-	/*auto lights = std::make_shared<ShapesSet>();
+	auto lights = std::make_shared<ShapesSet>();
 	lights->Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(400, 700, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
+		Point3f(0, 554, -100), Vector3f(156, 1, 131), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
 	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/Triangle");
 	if (!fs::exists(imageParentPath)) {
 		fs::create_directory(imageParentPath);
 	}
-	FrameRenderer renderer("Triangle", imageParentPath, 20, 1);
+	FrameRenderer renderer("Triangle", imageParentPath, 20, 8);
 	
-	Color background(0, 0, 0);
+	Color background(0.45, 0.45, 0.45);
 	Vector3f vup(0, 1, 0);
 	Point3f lookfrom = Point3f(0, 0, -500);
 	Point3f lookat = Point3f(0, 0, 0);
@@ -448,11 +448,11 @@ int main(int argc, char** argv) {
 	
 	auto settings = std::make_shared<FrameSettings>();
 	settings->SetImageOptions(400, 400);
-	settings->SetRayTraceOptions(1, 1);
+	settings->SetRayTraceOptions(50, 1);
 	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
 		std::make_shared<ShapesSet>(Triangles()), lights, background);
 	renderer.AddFrame(settings);
 	
-	renderer.Render(Draw, 0, 1);*/
+	renderer.Render(Draw, 0, 1);
 	return 0;
 }
