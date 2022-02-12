@@ -438,10 +438,10 @@ int main(int argc, char** argv) {
 	auto aperture = 0.0;
 	
 	auto settings = std::make_shared<FrameSettings>();
-	settings->SetImageOptions(800, 800);
-	settings->SetRayTraceOptions(50, 1000);
+	settings->SetImageOptions(400, 400);
+	settings->SetRayTraceOptions(50, 100);
 	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
-		std::make_shared<ShapesSet>(Triangles()), lights, background);
+		std::make_shared<ShapesSet>(Geometry()), lights, background);
 	renderer.AddFrame(settings);
 	
 	renderer.Render(Draw, 0, 1);
