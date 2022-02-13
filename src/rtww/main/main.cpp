@@ -13,7 +13,6 @@
 #include "core/Frame.hpp"
 #include "core/Transform.hpp"
 #include "core/Model.hpp"
-#include "shape/Triangle.hpp"
 #include <thread>
 #include <Windows.h>
 
@@ -320,7 +319,7 @@ ShapesSet Geometry() {
 	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.5, 0.5, 0.6), 0.0);
 	objects.Add(CreateSphere(Point3f(195, 120, 250), Vector3f(40, 40, 40), Vector3f(), aluminum));
 	objects.Add(CreateSphere(Point3f(305, 120, 250), Vector3f(40, 40, 40), Vector3f(), glass));
-	objects.Add(std::make_shared<Triangle>(Vector3f(195, 120, -100), Vector3f(500, 120, -100), Vector3f(380, 500, 0), green));
+	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(195, 120, -100), Vector3f(500, 120, -100), Vector3f(380, 500, 0), green));
 	
 	return objects;
 }
@@ -336,6 +335,7 @@ ShapesSet Triangles() {
 	auto black = std::make_shared<Lambertian>(Color(0.02, 0.02, 0.02));
 	auto yellow = std::make_shared<Lambertian>(Color(1, 1, 0));
 	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 8));
+	auto aluminum = std::make_shared<Metal>(Color(0.5, 0.5, 0.6), 0.0);
 
 	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(
 		Point3f(-50, 277.5, 277.5), Vector3f(1, 800, 1000), Vector3f()), whiteG));
@@ -349,14 +349,14 @@ ShapesSet Triangles() {
 	objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
 		Point3f(277.5, 277.5, 555), Vector3f(900, 655, 1), Vector3f()), whiteG));
 
-	objects.Add(std::make_shared<Triangle>(Vector3f(200, 0, 200), Vector3f(400, 0, 200), Vector3f(200, 200, 200), realGreen));
-	objects.Add(std::make_shared<Triangle>(Vector3f(200, 200, 200), Vector3f(400, 200, 200), Vector3f(400, 0, 200), blue));
-
-	objects.Add(std::make_shared<Triangle>(Vector3f(200, 0, 200), Vector3f(200, 0, 400), Vector3f(200, 200, 200), red));
-	objects.Add(std::make_shared<Triangle>(Vector3f(200, 0, 400), Vector3f(200, 200, 200), Vector3f(200, 200, 400), black));
-
-	objects.Add(std::make_shared<Triangle>(Vector3f(200, 200, 200), Vector3f(400, 200, 200), Vector3f(200, 200, 400), whiteG));
-	objects.Add(std::make_shared<Triangle>(Vector3f(200, 200, 400), Vector3f(400, 200, 400), Vector3f(400, 200, 200), yellow));
+	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 0, 200), Vector3f(400, 0, 200), Vector3f(200, 200, 200), aluminum));
+	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 200, 200), Vector3f(400, 200, 200), Vector3f(400, 0, 200), blue));
+	//							
+	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 0, 200), Vector3f(200, 0, 400), Vector3f(200, 200, 200), red));
+	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 0, 400), Vector3f(200, 200, 200), Vector3f(200, 200, 400), black));
+	//									 
+	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 200, 200), Vector3f(400, 200, 200), Vector3f(200, 200, 400), realGreen));
+	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 200, 400), Vector3f(400, 200, 400), Vector3f(400, 200, 200), yellow));
 
 	return objects;
 }
@@ -441,7 +441,7 @@ int main(int argc, char** argv) {
 	settings->SetImageOptions(400, 400);
 	settings->SetRayTraceOptions(50, 100);
 	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
-		std::make_shared<ShapesSet>(Geometry()), lights, background);
+		std::make_shared<ShapesSet>(Triangles()), lights, background);
 	renderer.AddFrame(settings);
 	
 	renderer.Render(Draw, 0, 1);

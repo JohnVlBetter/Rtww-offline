@@ -1,9 +1,13 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
-#include "core.hpp"
+#include "Mesh.hpp"
 
 class Model {
 public:
+	Model(const char* filename) {
+		Load(filename);
+	}
+
 	bool Load(const char* filename) const {
 		tinyobj::ObjReader reader;
 
@@ -61,4 +65,7 @@ public:
 		}
 		return true;
 	}
+
+public:
+	std::vector<std::shared_ptr<Mesh>> meshes;
 };
