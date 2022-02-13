@@ -4,8 +4,8 @@
 class Mesh {
 public:
 	Mesh(std::shared_ptr<Transform> transform, int tNum, const int* vIndices,
-		int vNum, const Point3f* v, const Vector3f* n, const Point2f* uv) 
-		: trianglesNum(tNum), verticesNum(vNum), vertexIndices(vIndices, vIndices + 3 * tNum) {
+		int vNum, const Point3f* v, const Vector3f* n, const Point2f* uv, std::shared_ptr<Material> material)
+		: material(material), trianglesNum(tNum), verticesNum(vNum), vertexIndices(vIndices, vIndices + 3 * tNum) {
 
 		vertices.reset(new Point3f[vNum]);
 		auto o2w = transform->GetObject2WorldMatrix();
@@ -28,4 +28,5 @@ public:
 	std::unique_ptr<Point2f[]> uvs;
 	std::unique_ptr<Vector3f[]> normals;
 	std::vector<int> vertexIndices;
+	std::shared_ptr<Material> material;
 };

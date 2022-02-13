@@ -62,14 +62,10 @@ bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionR
 	return true;
 }
 
-std::vector<std::shared_ptr<Shape>> CreateMesh(std::shared_ptr<Transform> transform,
-	int nTriangles, const int *vertexIndices, int nVertices, const Point3f *v,
-	const Vector3f *n, const Point2f *uv, std::shared_ptr<Material> mat) {
-	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(
-		transform, nTriangles, vertexIndices, nVertices, v, n, uv);
+std::vector<std::shared_ptr<Shape>> GetMeshTriangles(std::shared_ptr<Mesh> mesh) {
 	std::vector<std::shared_ptr<Shape>> triangles;
-	triangles.reserve(nTriangles);
-	for (int i = 0; i < nTriangles; ++i)
-		triangles.push_back(std::make_shared<Triangle>(mesh, i, mat));
+	triangles.reserve(mesh->trianglesNum);
+	for (int i = 0; i < mesh->trianglesNum; ++i)
+		triangles.push_back(std::make_shared<Triangle>(mesh, i, mesh->material));
 	return triangles;
 }

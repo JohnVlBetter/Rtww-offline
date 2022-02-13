@@ -13,6 +13,7 @@
 #include "core/Frame.hpp"
 #include "core/Transform.hpp"
 #include "core/Model.hpp"
+#include "shape/Triangle.hpp"
 #include <thread>
 #include <Windows.h>
 
@@ -361,6 +362,22 @@ ShapesSet Triangles() {
 	return objects;
 }
 
+ShapesSet CornellBoxModel() {
+	ShapesSet objects;
+	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 8));
+	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+		Point3f(300, 500, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), light)));
+	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/cornell_box.obj",std::make_shared<Transform>(
+		Point3f(0, 0, 0), Vector3f(1, 1, 1), Vector3f()));
+	for (auto& mesh : model.meshes) {
+		auto triangles = GetMeshTriangles(mesh);
+		for (int i = 0; i < triangles.size(); ++i)
+			objects.Add(triangles[i]);
+	}
+	
+	return objects;
+}
+
 std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
 	std::vector<Color> t(settings->imageWidth, Color(0, 0, 0));
 	for (int i = 0; i < settings->imageWidth; ++i) {
@@ -422,7 +439,7 @@ int main(int argc, char** argv) {
 
 	auto lights = std::make_shared<ShapesSet>();
 	lights->Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(400, 700, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
+		Point3f(300, 500, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
 	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/Triangles");
 	if (!fs::exists(imageParentPath)) {
 		fs::create_directory(imageParentPath);
@@ -441,12 +458,12 @@ int main(int argc, char** argv) {
 	settings->SetImageOptions(400, 400);
 	settings->SetRayTraceOptions(50, 100);
 	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
-		std::make_shared<ShapesSet>(Triangles()), lights, background);
+		std::make_shared<ShapesSet>(CornellBoxModel()), lights, background);
 	renderer.AddFrame(settings);
 	
 	renderer.Render(Draw, 0, 1);
-	//Model model;
-	//model.Load("D:/Workspace/CG/Repos/Rtww-offline/resources/models/cornell_box.obj");
+	//Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/cornell_box.obj",std::make_shared<Transform>(
+	//	Point3f(0, 0, 0), Vector3f(1, 1, 1), Vector3f()));
 	//system("pause");
 
 	/*auto lights = std::make_shared<ShapesSet>();
