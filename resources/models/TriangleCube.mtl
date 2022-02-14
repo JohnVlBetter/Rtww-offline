@@ -1,0 +1,14 @@
+newmtl mtl1
+illum 4
+Ka 0.2 0.2 0.2
+Kd 1 1 1
+Ks 0.2 0.2 0.2
+Tf 1.00 1.00 1.00
+map_Kd cube-colormat.bmp
+newmtl mtl2
+illum 4
+Ka 0.2 0.2 0.2
+Kd 1 1 1
+Ks 0.2 0.2 0.2
+Tf 1.00 1.00 1.00
+map_Kd cube-ast.bmp

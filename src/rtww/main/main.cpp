@@ -364,11 +364,21 @@ ShapesSet Triangles() {
 
 ShapesSet CornellBoxModel() {
 	ShapesSet objects;
-	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 8));
+	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 15));
+	auto whiteG = std::make_shared<Lambertian>(Color(.73, .83, .73));
+	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(
+		Point3f(-50, 277.5, 277.5), Vector3f(1, 800, 1000), Vector3f()), whiteG));
+
 	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(300, 500, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), light)));
-	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/cornell_box.obj",std::make_shared<Transform>(
-		Point3f(0, 0, 0), Vector3f(1, 1, 1), Vector3f()));
+		Point3f(400, 700, 0), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), light)));
+
+	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+		Point3f(277.5, 0, 177.5), Vector3f(900, 1, 755), Vector3f()), whiteG));
+
+	objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
+		Point3f(277.5, 277.5, 555), Vector3f(900, 655, 1), Vector3f()), whiteG));
+	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/usemtl-issue-68.obj",std::make_shared<Transform>(
+		Point3f(250, 50, 200), Vector3f(30, 30, 30), Vector3f()));
 	for (auto& mesh : model.meshes) {
 		auto triangles = GetMeshTriangles(mesh);
 		for (int i = 0; i < triangles.size(); ++i)
@@ -456,7 +466,7 @@ int main(int argc, char** argv) {
 	
 	auto settings = std::make_shared<FrameSettings>();
 	settings->SetImageOptions(400, 400);
-	settings->SetRayTraceOptions(50, 100);
+	settings->SetRayTraceOptions(50, 1000);
 	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
 		std::make_shared<ShapesSet>(CornellBoxModel()), lights, background);
 	renderer.AddFrame(settings);

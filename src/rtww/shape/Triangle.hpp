@@ -40,7 +40,7 @@ bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionR
 	float u, v;
 	Vector3f e1 = mesh->vertices[vertexIndices[1]] - mesh->vertices[vertexIndices[0]];
 	Vector3f e2 = mesh->vertices[vertexIndices[2]] - mesh->vertices[vertexIndices[0]];
-	Vector3f s = r.origin - mesh->vertices[vertexIndices[1]];
+	Vector3f s = r.origin - mesh->vertices[vertexIndices[0]];
 	Vector3f s1 = Cross(r.direction, e2);
 	Vector3f s2 = Cross(s, e1);
 	float coeff = 1.0 / Dot(s1, e1);
