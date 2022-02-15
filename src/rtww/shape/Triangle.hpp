@@ -7,6 +7,7 @@ public:
 	Triangle(const std::shared_ptr<Mesh> &m, int triangleIndex, std::shared_ptr<Material> mat)
 		:mesh(m), material(mat) {
 		vertexIndices = &mesh->vertexIndices[3 * triangleIndex];
+		//std::cerr << mesh->vertices[vertexIndices[0]] << mesh->vertices[vertexIndices[1]] << mesh->vertices[vertexIndices[2]] << std::endl;
 	}
 
 	virtual bool Intersection(const Ray& r, Float tMin, Float tMax, IntersectionRecord& rec) const override;
@@ -54,7 +55,7 @@ bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionR
 	else return false;
 	rec.time = t;
 	rec.hitPoint = r.At(t);
-	rec.normal = Cross(e2, e1).Normalize();
+	rec.normal = Cross(-e1, -e2).Normalize();
 	rec.matPtr = material;
 	rec.SetFaceNormal(r, rec.normal);
 	rec.u = u;
