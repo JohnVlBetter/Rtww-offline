@@ -34,7 +34,12 @@ public:
 };
 
 bool Triangle::BoundingBox(Float time0, Float time1, AABB& outputBox) const {
-	return false;
+	const Point3f &p0 = mesh->vertices[vertexIndices[0]];
+	const Point3f &p1 = mesh->vertices[vertexIndices[1]];
+	const Point3f &p2 = mesh->vertices[vertexIndices[2]];
+	auto b3 = Union(Bounds3f(p0, p1), p2);
+	outputBox = AABB(b3.pMin,b3.pMax);
+	return true;
 }
 
 bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {

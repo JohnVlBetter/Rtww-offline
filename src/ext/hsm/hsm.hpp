@@ -382,6 +382,18 @@ bool Inside(const Point3<T> &p, const Bounds3<T> &b) {
 		    p.y <= b.pMax.y && p.z >= b.pMin.z && p.z <= b.pMax.z);
 }
 
+template <typename T>
+Point3<T> Min(const Point3<T> &p1, const Point3<T> &p2) {
+	return Point3<T>(std::min(p1.x, p2.x), std::min(p1.y, p2.y),
+		std::min(p1.z, p2.z));
+}
+
+template <typename T>
+Point3<T> Max(const Point3<T> &p1, const Point3<T> &p2) {
+	return Point3<T>(std::max(p1.x, p2.x), std::max(p1.y, p2.y),
+		std::max(p1.z, p2.z));
+}
+
 //two-dimensional vector
 template<typename T>
 class Vector2 {
@@ -875,6 +887,22 @@ template <typename T>
 inline std::ostream& operator << (std::ostream& o, const Bounds3<T>& b) {
 	o << "[ " << b.pMin << " , " << b.pMax << " ]";
 	return o;
+}
+
+template <typename T>
+Bounds3<T> Union(const Bounds3<T> &b, const Point3<T> &p) {
+	Bounds3<T> ret;
+	ret.pMin = Min(b.pMin, p);
+	ret.pMax = Max(b.pMax, p);
+	return ret;
+}
+
+template <typename T>
+Bounds3<T> Union(const Bounds3<T> &b1, const Bounds3<T> &b2) {
+	Bounds3<T> ret;
+	ret.pMin = Min(b1.pMin, b2.pMin);
+	ret.pMax = Max(b1.pMax, b2.pMax);
+	return ret;
 }
 
 typedef Bounds2<int> Bounds2i;

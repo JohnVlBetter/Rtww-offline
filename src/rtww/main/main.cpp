@@ -370,25 +370,26 @@ ShapesSet CornellBoxModel() {
 	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
 		Point3f(0, 899, 500), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), light)));
 
-	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(
-		Point3f(600, 450, 450), Vector3f(1, 900, 1200), Vector3f()), whiteG));
-	objects.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(
-		Point3f(-600, 450, 450), Vector3f(1, 900, 1200), Vector3f()), whiteG));
-	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(0, 0, 0), Vector3f(1200, 1, 1200), Vector3f()), whiteG));
-	objects.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(0, 900, 0), Vector3f(1200, 1, 1200), Vector3f()), whiteG));
-	objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
-		Point3f(0, 450, 450), Vector3f(1200, 900, 1), Vector3f()), whiteG));
+	//objects.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(
+	//	Point3f(600, 450, 450), Vector3f(1, 900, 1200), Vector3f()), whiteG));
+	//objects.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(
+	//	Point3f(-600, 450, 450), Vector3f(1, 900, 1200), Vector3f()), whiteG));
+	//objects.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+	//	Point3f(0, 0, 0), Vector3f(1200, 1, 1200), Vector3f()), whiteG));
+	//objects.Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+	//	Point3f(0, 900, 0), Vector3f(1200, 1, 1200), Vector3f()), whiteG));
+	//objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
+	//	Point3f(0, 450, 450), Vector3f(1200, 900, 1), Vector3f()), whiteG));
 
-	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/bunny.obj",std::make_shared<Transform>(
-		Point3f(100, 100, 650), Vector3f(0.5, 0.5, 0.5), Vector3f(0,180,0)));
+	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/dragon.obj",std::make_shared<Transform>(
+		Point3f(0, 0, 650), Vector3f(1, 1, 1), Vector3f(0,0,0)));
+	ShapesSet modelT;
 	for (auto& mesh : model.meshes) {
 		auto triangles = GetMeshTriangles(mesh);
 		for (int i = 0; i < triangles.size(); ++i)
-			objects.Add(triangles[i]);
+			modelT.Add(triangles[i]);
 	}
-	
+	objects.Add(std::make_shared<BVHNode>(modelT, 0, 1));
 	return objects;
 }
 
@@ -470,7 +471,7 @@ int main(int argc, char** argv) {
 	
 	auto settings = std::make_shared<FrameSettings>();
 	settings->SetImageOptions(200, 200);
-	settings->SetRayTraceOptions(50, 200);
+	settings->SetRayTraceOptions(20, 100);
 	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
 		std::make_shared<ShapesSet>(CornellBoxModel()), lights, background);
 	renderer.AddFrame(settings);
