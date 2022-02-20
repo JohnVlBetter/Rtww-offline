@@ -140,7 +140,6 @@ ShapesSet Geometry() {
 	std::shared_ptr<Material> aluminum = std::make_shared<Metal>(Color(0.5, 0.5, 0.6), 0.0);
 	objects.Add(CreateSphere(Point3f(195, 120, 250), Vector3f(40, 40, 40), Vector3f(), aluminum));
 	objects.Add(CreateSphere(Point3f(305, 120, 250), Vector3f(40, 40, 40), Vector3f(), glass));
-	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(195, 120, -100), Vector3f(500, 120, -100), Vector3f(380, 500, 0), green));
 	
 	return objects;
 }
@@ -170,15 +169,6 @@ ShapesSet Triangles() {
 	objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
 		Point3f(277.5, 277.5, 555), Vector3f(900, 655, 1), Vector3f()), whiteG));
 
-	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 0, 200), Vector3f(400, 0, 200), Vector3f(200, 200, 200), aluminum));
-	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 200, 200), Vector3f(400, 200, 200), Vector3f(400, 0, 200), blue));
-	//							
-	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 0, 200), Vector3f(200, 0, 400), Vector3f(200, 200, 200), red));
-	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 0, 400), Vector3f(200, 200, 200), Vector3f(200, 200, 400), black));
-	//									 
-	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 200, 200), Vector3f(400, 200, 200), Vector3f(200, 200, 400), realGreen));
-	//objects.Add(std::make_shared<Triangle>(nullptr, Vector3f(200, 200, 400), Vector3f(400, 200, 400), Vector3f(400, 200, 200), yellow));
-
 	return objects;
 }
 
@@ -201,8 +191,8 @@ ShapesSet CornellBoxModel() {
 	//objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
 	//	Point3f(0, 450, 450), Vector3f(1200, 900, 1), Vector3f()), whiteG));
 
-	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/dragon.obj",std::make_shared<Transform>(
-		Point3f(0, 0, 650), Vector3f(1, 1, 1), Vector3f(0,0,0)));
+	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/usemtl-issue-68.obj",std::make_shared<Transform>(
+		Point3f(0, 0, 650), Vector3f(80, 80, 80), Vector3f(0,10,0)));
 	ShapesSet modelT;
 	for (auto& mesh : model.meshes) {
 		auto triangles = GetMeshTriangles(mesh);
@@ -250,8 +240,8 @@ int main(int argc, char** argv) {
 	auto aperture = 0.0;
 	
 	auto settings = std::make_shared<FrameSettings>();
-	settings->SetImageOptions(200, 200);
-	settings->SetRayTraceOptions(20, 100);
+	settings->SetImageOptions(400, 400);
+	settings->SetRayTraceOptions(20, 1000);
 	settings->SetScene(std::make_shared<Camera>(lookfrom, lookat, vup, vfov, 1.0f, aperture, dist2Focus),
 		std::make_shared<ShapesSet>(CornellBoxModel()), lights, background);
 	renderer.AddFrame(settings);

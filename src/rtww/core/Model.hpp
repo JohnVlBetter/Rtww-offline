@@ -90,18 +90,6 @@ public:
 				shape.mesh.material_ids[f];
 			}
 
-			//for (const auto& index : shape.mesh.indices) {
-			//	vertices[offset] = Point3f(attrib.vertices[3 * index.vertex_index + 0],
-			//		attrib.vertices[3 * index.vertex_index + 1],
-			//		attrib.vertices[3 * index.vertex_index + 2]);
-			//	/*uvs[offset] = Point2f(attrib.texcoords[2 * index.texcoord_index + 0],
-			//		1.0f - attrib.texcoords[2 * index.texcoord_index + 1]);
-			//	normals[offset] = Vector3f(attrib.normals[3 * index.normal_index + 0],
-			//		attrib.normals[3 * index.normal_index + 1],
-			//		attrib.normals[3 * index.normal_index + 2]);*/
-			//	vertexIndices[offset] = offset;
-			//	++offset;
-			//}
 			meshes.push_back(std::make_shared<Mesh>(transform, trianglesNum, vertexIndices, verticesNum, 
 				vertices, normals, uvs, std::make_shared<Lambertian>(Color(0.89, 0.89, 0.89))));
 		}
