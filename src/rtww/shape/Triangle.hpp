@@ -63,6 +63,8 @@ bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionR
 	rec.normal = Cross(-e1, -e2).Normalize();
 	rec.matPtr = material;
 	rec.SetFaceNormal(r, rec.normal);
+	Point2f uv[3];
+	GetUV(uv);
 	rec.u = u;
 	rec.v = v;
 	return true;

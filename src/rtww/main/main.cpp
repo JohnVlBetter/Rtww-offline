@@ -191,8 +191,8 @@ ShapesSet CornellBoxModel() {
 	//objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
 	//	Point3f(0, 450, 450), Vector3f(1200, 900, 1), Vector3f()), whiteG));
 
-	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/usemtl-issue-68.obj",std::make_shared<Transform>(
-		Point3f(0, 0, 650), Vector3f(80, 80, 80), Vector3f(0,10,0)));
+	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/cornell_box.obj",std::make_shared<Transform>(
+		Point3f(0, 0, 650), Vector3f(2, 2, 2), Vector3f(0,0,0)));
 	ShapesSet modelT;
 	for (auto& mesh : model.meshes) {
 		auto triangles = GetMeshTriangles(mesh);
