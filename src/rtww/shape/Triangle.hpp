@@ -44,8 +44,11 @@ bool Triangle::BoundingBox(Float time0, Float time1, AABB& outputBox) const {
 
 bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionRecord & rec) const {
 	float u, v;
-	Vector3f e1 = mesh->vertices[vertexIndices[1]] - mesh->vertices[vertexIndices[0]];
-	Vector3f e2 = mesh->vertices[vertexIndices[2]] - mesh->vertices[vertexIndices[0]];
+	auto p0 = mesh->vertices[vertexIndices[0]];
+	auto p1 = mesh->vertices[vertexIndices[1]];
+	auto p2 = mesh->vertices[vertexIndices[2]];
+	Vector3f e1 = p1 - p0;
+	Vector3f e2 = p2 - p0;
 	Vector3f s = r.origin - mesh->vertices[vertexIndices[0]];
 	Vector3f s1 = Cross(r.direction, e2);
 	Vector3f s2 = Cross(s, e1);
@@ -63,10 +66,17 @@ bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionR
 	rec.normal = Cross(-e1, -e2).Normalize();
 	rec.matPtr = material;
 	rec.SetFaceNormal(r, rec.normal);
-	Point2f uv[3];
-	GetUV(uv);
-	rec.u = u;
-	rec.v = v;
+	//Point2f uv[3];
+	//
+	//float i = (-(rec.hitPoint.x - p1.x) * (p2.y - p1.y) + (rec.hitPoint.y - p1.y)*(p2.x - p1.x)) /
+	//	(-(p0.x - p1.x)*(p2.y - p1.y) + (p0.y - p1.y)*(p2.x - p1.x));
+	//float j = (-(rec.hitPoint.x - p2.x) * (p0.y - p2.y) + (rec.hitPoint.y - p2.y)*(p0.x - p2.x)) /
+	//	(-(p1.x - p2.x)*(p0.y - p2.y) + (p1.y - p2.y)*(p0.x - p2.x));
+	//float k = 1 - i - j;
+	//
+	//GetUV(uv);
+	//rec.u = i * uv[0].x + j * uv[1].x + k * uv[2].x;
+	//rec.v = i * uv[0].y + j * uv[1].y + k * uv[2].y;
 	return true;
 }
 
