@@ -177,8 +177,10 @@ ShapesSet CornellBoxModel() {
 	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 15));
 	auto whiteG = std::make_shared<Lambertian>(Color(0.73, 0.83, .73));
 
-	objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(0, 899, 500), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), light)));
+	objects.Add(std::make_shared<Sphere>(std::make_shared<Transform>(
+		Point3f(0, 900, 500), Vector3f(300, 300, 300), Vector3f(0, 0, 0)), light));
+	/*objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
+		Point3f(0, 899, 500), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), light)));*/
 
 	//objects.Add(std::make_shared<RectangleYZ>(std::make_shared<Transform>(
 	//	Point3f(600, 450, 450), Vector3f(1, 900, 1200), Vector3f()), whiteG));
@@ -223,8 +225,8 @@ std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
 
 int main(int argc, char** argv) {
 	auto lights = std::make_shared<ShapesSet>();
-	lights->Add(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
-		Point3f(0, 899, 500), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
+	lights->Add(std::make_shared<Sphere>(std::make_shared<Transform>(
+		Point3f(0, 900, 500), Vector3f(300, 300, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
 	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/Triangles");
 	if (!fs::exists(imageParentPath)) {
 		fs::create_directory(imageParentPath);
