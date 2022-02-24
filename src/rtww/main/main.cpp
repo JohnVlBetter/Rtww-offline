@@ -202,6 +202,9 @@ ShapesSet CornellBoxModel() {
 			modelT.Add(triangles[i]);
 	}
 	objects.Add(std::make_shared<BVHNode>(modelT, 0, 1));
+	std::shared_ptr<Shape> box = std::make_shared<Box>(std::make_shared<Transform>(
+		Point3f(0, -250, 650), Vector3f(500, 500, 500), Vector3f(0, 50, 0)), whiteG);
+	objects.Add(box);
 	return objects;
 }
 
