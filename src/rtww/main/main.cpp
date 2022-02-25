@@ -174,11 +174,11 @@ ShapesSet Triangles() {
 
 ShapesSet CornellBoxModel() {
 	ShapesSet objects;
-	auto light = std::make_shared<DiffuseLight>(Color(15, 15, 15));
+	auto light = std::make_shared<DiffuseLight>(Color(5, 5, 5));
 	auto whiteG = std::make_shared<Lambertian>(Color(0.73, 0.83, .73));
 
 	objects.Add(std::make_shared<Sphere>(std::make_shared<Transform>(
-		Point3f(0, 900, 500), Vector3f(300, 300, 300), Vector3f(0, 0, 0)), light));
+		Point3f(0, 850, 500), Vector3f(100, 100, 100), Vector3f(0, 0, 0)), light));
 	/*objects.Add(std::make_shared<FlipFace>(std::make_shared<RectangleXZ>(std::make_shared<Transform>(
 		Point3f(0, 899, 500), Vector3f(300, 1, 300), Vector3f(0, 0, 0)), light)));*/
 
@@ -193,18 +193,23 @@ ShapesSet CornellBoxModel() {
 	//objects.Add(std::make_shared<RectangleXY>(std::make_shared<Transform>(
 	//	Point3f(0, 450, 450), Vector3f(1200, 900, 1), Vector3f()), whiteG));
 
-	Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/usemtl-issue-68.obj",std::make_shared<Transform>(
-		Point3f(0, 0, 650), Vector3f(80, 80, 80), Vector3f(0,10,0)));
-	ShapesSet modelT;
-	for (auto& mesh : model.meshes) {
-		auto triangles = GetMeshTriangles(mesh);
-		for (int i = 0; i < triangles.size(); ++i)
-			modelT.Add(triangles[i]);
-	}
-	objects.Add(std::make_shared<BVHNode>(modelT, 0, 1));
-	std::shared_ptr<Shape> box = std::make_shared<Box>(std::make_shared<Transform>(
-		Point3f(0, -250, 650), Vector3f(500, 500, 500), Vector3f(0, 50, 0)), whiteG);
-	objects.Add(box);
+	//Model model("D:/Workspace/CG/Repos/Rtww-offline/resources/models/TriangleCube.obj",std::make_shared<Transform>(
+	//	Point3f(0, 0, 650), Vector3f(200, 200, 200), Vector3f(20,30,40)));
+	//ShapesSet modelT;
+	//for (auto& mesh : model.meshes) {
+	//	auto triangles = GetMeshTriangles(mesh);
+	//	for (int i = 0; i < triangles.size(); ++i)
+	//		modelT.Add(triangles[i]);
+	//}
+	//objects.Add(std::make_shared<BVHNode>(modelT, 0, 1));
+	Vector3f vertices[6] = { Vector3f(-1.000000, -1.000000, 1.000000) ,Vector3f(1.000000, -1.000000, 1.000000) ,Vector3f(-1.000000, 1.000000, 1.000000),
+					  Vector3f(-1.000000, 1.000000, 1.000000) ,Vector3f(1.000000, -1.000000, 1.000000) ,Vector3f(1.000000, 1.000000, 1.000000) };
+	int vertexIndices
+
+
+	//std::shared_ptr<Shape> box = std::make_shared<Box>(std::make_shared<Transform>(
+	//	Point3f(0, -250, 650), Vector3f(500, 500, 500), Vector3f(0, 50, 0)), whiteG);
+	//objects.Add(box);
 	return objects;
 }
 
@@ -229,7 +234,7 @@ std::vector<Color> Draw(int index, std::shared_ptr<FrameSettings> settings) {
 int main(int argc, char** argv) {
 	auto lights = std::make_shared<ShapesSet>();
 	lights->Add(std::make_shared<Sphere>(std::make_shared<Transform>(
-		Point3f(0, 900, 500), Vector3f(300, 300, 300), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
+		Point3f(0, 850, 500), Vector3f(100, 100, 100), Vector3f(0, 0, 0)), std::shared_ptr<Material>()));
 	fs::path imageParentPath("D:/Workspace/CG/Repos/Rtww-offline/build/x64/Release/Triangles");
 	if (!fs::exists(imageParentPath)) {
 		fs::create_directory(imageParentPath);

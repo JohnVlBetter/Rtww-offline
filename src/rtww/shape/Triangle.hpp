@@ -66,6 +66,20 @@ bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionR
 	rec.normal = Cross(-e1, -e2).Normalize();
 	rec.matPtr = material;
 	rec.SetFaceNormal(r, rec.normal);
+	Point2f uv[3];
+	GetUV(uv);
+	Vector3f f1 = p0 - rec.hitPoint;
+	Vector3f f2 = p1 - rec.hitPoint;
+	Vector3f f3 = p2 - rec.hitPoint;
+	// calculate the areas and factors (order of parameters doesn't matter):
+	Float a = Cross(p0 - p1, p0 - p2).Length(); // main triangle area a
+	Float a1 = Cross(f2, f3).Length() / a; // p1's triangle area / a
+	Float a2 = Cross(f3, f1).Length() / a; // p2's triangle area / a 
+	Float a3 = Cross(f1, f2).Length() / a; // p3's triangle area / a
+	// find the uv corresponding to point f (uv1/uv2/uv3 are associated to p1/p2/p3):
+	rec.u = a1 * uv[0].x + a2 * uv[1].x + a3 * uv[2].x;
+	rec.v = a1 * uv[0].y + a2 * uv[1].y + a3 * uv[2].y;
+
 	//Point2f uv[3];
 	//
 	//float i = (-(rec.hitPoint.x - p1.x) * (p2.y - p1.y) + (rec.hitPoint.y - p1.y)*(p2.x - p1.x)) /
@@ -83,6 +97,12 @@ bool Triangle::Intersection(const Ray & r, Float tMin, Float tMax, IntersectionR
 std::vector<std::shared_ptr<Shape>> GetMeshTriangles(std::shared_ptr<Mesh> mesh) {
 	std::vector<std::shared_ptr<Shape>> triangles;
 	triangles.reserve(mesh->trianglesNum);
+	//for (int i = 0; i < mesh->verticesNum; i++) {
+	//	std::cout << mesh->vertices[i] << std::endl;
+	//}
+	//for (int i = 0; i < mesh->verticesNum; i++) {
+	//	std::cout << mesh->uvs[i] << std::endl;
+	//}
 	for (int i = 0; i < mesh->trianglesNum; ++i)
 		triangles.push_back(std::make_shared<Triangle>(mesh, i, mesh->material));
 	return triangles;
